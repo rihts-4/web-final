@@ -8,4 +8,10 @@
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
-  
+
+
+  how to pop up
+  - remove for not first time users
+
+  explore
+  - trending tags or topics
