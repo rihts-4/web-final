@@ -1,13 +1,21 @@
-import { Home, Compass, Bell, PenLine, Bookmark, User, Leaf } from "lucide-react";
+import {
+  Home,
+  Compass,
+  Bell,
+  Bookmark,
+  User,
+  PenLine,
+} from "lucide-react";
 
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
   onCompose: () => void;
+  onShowOnboarding: () => void;
   currentUser: { name: string; handle: string; avatar: string };
 }
 
-const navItems = [
+const NAV_ITEMS = [
   { id: "home", label: "Home", icon: Home },
   { id: "explore", label: "Explore", icon: Compass },
   { id: "notifications", label: "Ripples", icon: Bell },
@@ -15,62 +23,155 @@ const navItems = [
   { id: "profile", label: "Profile", icon: User },
 ];
 
-export function Sidebar({ activeTab, onTabChange, onCompose, currentUser }: SidebarProps) {
+export function Sidebar({
+  activeTab,
+  onTabChange,
+  onCompose,
+  onShowOnboarding,
+  currentUser,
+}: SidebarProps) {
   return (
-    <aside className="flex flex-col h-screen sticky top-0 w-[72px] items-center py-5 gap-2" style={{ borderRight: "1px solid rgba(42,42,37,0.1)" }}>
-      {/* Grove Logo */}
-      <button className="mb-3 w-10 h-10 rounded-2xl flex items-center justify-center transition-transform hover:scale-110"
-        style={{ background: "#6B8F5E", boxShadow: "0 4px 12px rgba(107,143,94,0.35)" }}>
-        <Leaf size={20} className="text-white" />
+    <aside
+      className="flex flex-col h-screen sticky top-0 w-[72px] items-center py-4 gap-1.5 flex-shrink-0 z-50"
+      style={{
+        borderRight: "1px solid rgba(42,42,37,0.1)",
+        fontFamily: "'Nunito', sans-serif",
+      }}
+    >
+      {/* Grove logo - always routes to Home */}
+      <button
+        onClick={() => onTabChange("home")}
+        title="Home"
+        className="mb-3 w-10 h-10 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+        style={{
+          background: "#6B8F5E",
+          boxShadow: "0 4px 14px rgba(107,143,94,0.35)",
+        }}
+      >
+        <GroveMark />
       </button>
 
-      {/* Nav items */}
-      <div className="flex flex-col gap-1 flex-1">
-        {navItems.map(({ id, label, icon: Icon }) => {
-          const isActive = activeTab === id;
+      {/* Nav items
+          Inactive:  strokeWidth 2.2  (visibly solid, not hairline)
+          Active:    strokeWidth 2.8  (noticeably bolder)
+      */}
+      <div className="flex flex-col gap-0.5 flex-1 w-full items-center">
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+          const active = activeTab === id;
           return (
             <button
               key={id}
               onClick={() => onTabChange(id)}
               title={label}
-              className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all group"
+              className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all group hover:bg-secondary active:scale-95"
               style={{
-                background: isActive ? "rgba(107,143,94,0.15)" : "transparent",
-                color: isActive ? "#6B8F5E" : "#B5B0A4",
+                background: active
+                  ? "rgba(107,143,94,0.15)"
+                  : "transparent",
               }}
             >
-              <Icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
-              {isActive && (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-l-full" style={{ background: "#6B8F5E" }} />
+              <Icon
+                size={22}
+                strokeWidth={active ? 2.8 : 2.2}
+                style={{
+                  color: active ? "#6B8F5E" : "#B5B0A4",
+                }}
+              />
+
+              {/* Right-edge active indicator */}
+              {active && (
+                <div
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-l-full"
+                  style={{ background: "#6B8F5E" }}
+                />
               )}
-              {/* Tooltip */}
-              <div className="absolute left-full ml-3 px-2.5 py-1 rounded-lg text-[12px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
-                style={{ background: "#2A2A25", color: "#F4F0E6", fontWeight: 600 }}>
+
+              {/* Hover tooltip */}
+              <span
+                className="absolute left-full ml-3 px-2.5 py-1 rounded-xl text-[12px] whitespace-nowrap pointer-events-none z-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{
+                  background: "#2A2A25",
+                  color: "#F4F0E6",
+                  fontWeight: 700,
+                }}
+              >
                 {label}
-              </div>
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Compose */}
+      {/* Compose - routes to new-thought modal */}
       <button
         onClick={onCompose}
         title="New Thought"
-        className="w-12 h-12 rounded-2xl flex items-center justify-center mb-2 transition-all hover:scale-105"
-        style={{ background: "#6B8F5E", boxShadow: "0 4px 14px rgba(107,143,94,0.4)", color: "white" }}
+        className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:opacity-90 active:scale-95 mb-1"
+        style={{
+          background: "#6B8F5E",
+          boxShadow: "0 4px 14px rgba(107,143,94,0.4)",
+          color: "white",
+        }}
       >
-        <PenLine size={20} />
+        <PenLine size={20} strokeWidth={2.4} />
       </button>
 
-      {/* Avatar */}
+      {/* User avatar - routes to Profile */}
       <button
         onClick={() => onTabChange("profile")}
-        className="w-10 h-10 rounded-full overflow-hidden transition-transform hover:scale-105"
-        style={{ outline: "2px solid rgba(107,143,94,0.4)", outlineOffset: 2 }}
+        title={`@${currentUser.handle} - View profile`}
+        className="w-10 h-10 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95"
+        style={{
+          outline: "2px solid rgba(107,143,94,0.4)",
+          outlineOffset: 2,
+        }}
       >
-        <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
+        <img
+          src={currentUser.avatar}
+          alt={currentUser.name}
+          className="w-full h-full object-cover"
+        />
+      </button>
+
+      {/* Help button - reopens onboarding */}
+      <button
+        onClick={onShowOnboarding}
+        title="How Grove works"
+        className="w-7 h-7 rounded-full flex items-center justify-center mt-1 mb-1 transition-all hover:bg-secondary"
+        style={{
+          border: "1.5px solid rgba(42,42,37,0.15)",
+          color: "#B5B0A4",
+        }}
+      >
+        <span
+          className="text-[12px]"
+          style={{ fontWeight: 800 }}
+        >
+          ?
+        </span>
       </button>
     </aside>
+  );
+}
+
+function GroveMark() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <path
+        d="M11 20V10"
+        stroke="white"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M11 10C11 10 7 7 5 2c3 0 5.5 1.5 6.5 4.5C12.5 3.5 15 2 18 2c-2 5-7 8-7 8z"
+        fill="white"
+        opacity="0.9"
+      />
+      <path
+        d="M11 15C11 15 8.5 12.5 7 9c2 0 3.5 1 4.5 2.5C12.5 10 14 9 16 9c-1.5 3.5-5 6-5 6z"
+        fill="white"
+      />
+    </svg>
   );
 }

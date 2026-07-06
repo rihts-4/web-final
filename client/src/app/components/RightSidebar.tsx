@@ -14,7 +14,11 @@ const voices = [
   { name: "Idris Kamara", handle: "idriskamara", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=40&h=40&fit=crop&auto=format" },
 ];
 
-export function RightSidebar() {
+interface RightSidebarProps {
+  onTopicClick?: (topic: string) => void;
+}
+
+export function RightSidebar({ onTopicClick }: RightSidebarProps) {
   return (
     <aside className="w-[300px] pl-5 py-4 flex flex-col gap-5">
       {/* Search */}
@@ -41,7 +45,11 @@ export function RightSidebar() {
           <h2 className="text-foreground text-[15px]" style={{ fontWeight: 800 }}>Growing topics</h2>
         </div>
         {trends.map((t, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/60 rounded-xl mx-1">
+          <div 
+            key={i} 
+            onClick={() => onTopicClick && onTopicClick(t.topic)}
+            className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/60 rounded-xl mx-1"
+          >
             <span className="text-lg">{t.emoji}</span>
             <div className="flex-1 min-w-0">
               <p className="text-foreground text-[14px] truncate" style={{ fontWeight: 700 }}>{t.topic}</p>

@@ -7,9 +7,10 @@ interface DeckFeedProps {
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
   onBookmark: (id: string) => void;
+  onReply: (post: ThoughtPost) => void;
 }
 
-export function DeckFeed({ posts, onLike, onRepost, onBookmark }: DeckFeedProps) {
+export function DeckFeed({ posts, onLike, onRepost, onBookmark, onReply }: DeckFeedProps) {
   const [topIndex, setTopIndex] = useState(0);
 
   const advance = () => setTopIndex((i) => Math.min(i + 1, posts.length - 1));
@@ -61,8 +62,8 @@ export function DeckFeed({ posts, onLike, onRepost, onBookmark }: DeckFeedProps)
               onLike={(id) => { onLike(id); if (isTop) advance(); }}
               onRepost={onRepost}
               onBookmark={onBookmark}
-              onSwipeLeft={isTop ? advance : undefined}
-              onSwipeRight={isTop ? advance : undefined}
+              onReply={onReply}
+              onSwipedAway={isTop ? advance : undefined}
               isTop={isTop}
               style={{
                 transform: `scale(${scale}) translateY(${translateY}px)`,
