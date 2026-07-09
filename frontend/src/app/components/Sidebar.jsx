@@ -9,12 +9,17 @@ const NAV_ITEMS = [
 
 export function Sidebar({
   activeTab,
-  onTabChange,
   onCompose,
   onShowOnboarding,
   onLogout,
   currentUser,
 }) {
+  const navigate = useNavigate();
+
+  const handleNavClick = (item) => {
+    navigate(item.path);
+  };
+
   return (
     <aside
       className="flex flex-col h-screen sticky top-0 w-[72px] items-center py-4 gap-1.5 flex-shrink-0 z-50"
@@ -25,7 +30,7 @@ export function Sidebar({
     >
       {/* Grove logo - always routes to Home */}
       <button
-        onClick={() => onTabChange("home")}
+        onClick={() => handleNavClick(NAV_ITEMS[0])}
         title="Home"
         className="mb-3 w-10 h-10 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
         style={{
@@ -41,12 +46,12 @@ export function Sidebar({
            Active:    strokeWidth 2.8  (noticeably bolder)
         */}
       <div className="flex flex-col gap-0.5 flex-1 w-full items-center">
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
           const active = activeTab === id;
           return (
             <button
               key={id}
-              onClick={() => onTabChange(id)}
+              onClick={() => handleNavClick({ id, label, icon: Icon, path })}
               title={label}
               className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all group hover:bg-secondary active:scale-95"
               style={{
