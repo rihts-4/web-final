@@ -7,8 +7,10 @@ const router = express.Router();
 /**
  * Get a user's public profile
  */
-router.get("/:username", (req, res) => {
+router.get("/:username", auth.optionalAuth, (req, res) => {
   try {
+
+    const currentUserId = req.user?.id;
 
     const user = db.prepare(`
       SELECT
@@ -29,6 +31,7 @@ router.get("/:username", (req, res) => {
     const posts = db.prepare(`
       SELECT
         posts.id,
+        posts.user_id,
         posts.content,
         posts.image_path,
         posts.created_at,
@@ -37,14 +40,33 @@ router.get("/:username", (req, res) => {
           SELECT COUNT(*)
           FROM likes
           WHERE likes.post_id = posts.id
-        ) AS like_count
+        ) AS like_count,
+
+        ${currentUserId ? `(
+          SELECT COUNT(*)
+          FROM likes
+          WHERE likes.post_id = posts.id AND likes.user_id = ?
+        ) AS liked` : "0 AS liked"},
+
+        ${currentUserId ? `(
+          SELECT COUNT(*)
+          FROM follows
+          WHERE follower_id = ? AND following_id = posts.user_id
+        ) AS is_following` : "0 AS is_following"}
 
       FROM posts
 
       WHERE posts.user_id = ?
 
       ORDER BY posts.created_at DESC
-    `).all(user.id);
+    `).all(...(currentUserId ? [currentUserId, currentUserId, user.id] : [user.id]));
+
+    const isFollowing = currentUserId
+      ? db.prepare(`
+          SELECT 1 FROM follows
+          WHERE follower_id = ? AND following_id = ?
+        `).get(currentUserId, user.id) ? true : false
+      : false;
 
     const followers = db.prepare(`
       SELECT COUNT(*) AS count
@@ -62,6 +84,7 @@ router.get("/:username", (req, res) => {
       user,
       followers,
       following,
+      isFollowing,
       posts
     });
 

@@ -38,9 +38,9 @@ export function Layout({ children }) {
     const getActiveNav = () => {
         const path = location.pathname;
         if (path === "/") return "home";
-        if (path === "/explore") return "explore";
+        if (path.startsWith("/explore")) return "explore";
         if (path === "/notifications") return "notifications";
-        if (path === "/profile") return "profile";
+        if (path.startsWith("/profile")) return "profile";
         return "home";
     };
 
@@ -51,9 +51,9 @@ export function Layout({ children }) {
         navigate("/login");
     };
 
-    const handlePost = async (content) => {
+    const handlePost = async (content, image) => {
         try {
-            await api.posts.create({ content });
+            await api.posts.create({ content, image });
             setShowCompose(false);
         } catch (err) {
             alert(err.message);
@@ -100,7 +100,10 @@ export function Layout({ children }) {
                         hashtags={trending.hashtags}
                         users={trending.users}
                         onTopicClick={(topic) => {
-                            navigate("/explore");
+                            navigate(`/explore/hashtag?q=${encodeURIComponent(topic)}`);
+                        }}
+                        onUserClick={(username) => {
+                            navigate(`/profile/${username}`);
                         }}
                     />
                 </div>

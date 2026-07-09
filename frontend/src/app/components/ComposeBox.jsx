@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Image, MapPin, Smile, BarChart2, Zap } from "lucide-react";
+import { Image, X, Zap } from "lucide-react";
 
 export function ComposeBox({
   currentUser,
@@ -8,13 +8,21 @@ export function ComposeBox({
   replyTo,
 }) {
   const [content, setContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
   const handlePost = () => {
     if (!content.trim()) return;
-    onPost(content.trim());
+    onPost(content.trim(), selectedImage);
     setContent("");
+    setSelectedImage(null);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setSelectedImage(file);
   };
 
   const handleInput = (e) => {
@@ -60,25 +68,44 @@ export function ComposeBox({
             style={{ fontWeight: 400 }}
           />
 
+          {/* Image preview */}
+          {selectedImage && (
+            <div className="relative rounded-2xl overflow-hidden mb-3" style={{ maxHeight: 180 }}>
+              <img
+                src={URL.createObjectURL(selectedImage)}
+                alt=""
+                className="w-full object-cover"
+                style={{ maxHeight: 180 }}
+              />
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(0,0,0,0.6)", color: "#FDFAF4" }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
           {/* Divider */}
           <div className="h-px bg-border mb-3" />
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-0.5 text-primary">
-              {[
-                { icon: Image, title: "Media" },
-                { icon: Smile, title: "Emoji" },
-                { icon: BarChart2, title: "Poll" },
-                { icon: MapPin, title: "Location" },
-              ].map(({ icon: Icon, title }) => (
-                <button
-                  key={title}
-                  title={title}
-                  className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
-                >
-                  <Icon size={18} />
-                </button>
-              ))}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                title="Attach image"
+                className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
+              >
+                <Image size={18} />
+              </button>
             </div>
 
             <div className="flex items-center gap-3">

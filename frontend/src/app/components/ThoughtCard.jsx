@@ -348,15 +348,12 @@ export function ThoughtCard({
 
                 {/* Image */}
                 {post.image && (
-                    <div
-                        className="rounded-2xl overflow-hidden mb-4"
-                        style={{ maxHeight: 200 }}
-                    >
+                    <div className="rounded-2xl overflow-hidden mb-4">
                         <img
                             src={post.image}
                             alt=""
-                            className="w-full object-cover"
-                            style={{ maxHeight: 200 }}
+                            className="w-full"
+                            style={{ maxHeight: 300, objectFit: "contain", background: "#EDE9DD" }}
                         />
                     </div>
                 )}
@@ -402,7 +399,7 @@ export function ThoughtCard({
                                 fill={post.liked ? "currentColor" : "none"}
                             />
                         }
-                        label={formatCount(post.likes + (post.liked ? 1 : 0))}
+                        label={formatCount(post.likes)}
                         activeColor={post.liked ? "#C0453A" : null}
                         tooltip="Like — swipe right →"
                     />

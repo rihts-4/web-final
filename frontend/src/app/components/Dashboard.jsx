@@ -8,7 +8,7 @@ import { ProfilePage } from "./ProfilePage";
 import { OnboardingModal } from "./OnboardingModal";
 import { ReplyModal } from "./ReplyModal";
 import { HashtagList } from "./HashtagList";
-import { api } from "../services/api";
+import { api, IMAGE_BASE } from "../services/api";
 import { useUser } from "../context/UserContext";
 import { Bell, Compass, Search } from "lucide-react";
 
@@ -35,7 +35,7 @@ export function Dashboard({ initialUser }) {
                         handle: post.username,
                     },
                     content: post.content,
-                    image: post.image_path,
+                    image: post.image_path ? `${IMAGE_BASE}${post.image_path}` : null,
                     timestamp: new Date(post.created_at).toLocaleDateString(),
                     likes: post.like_count || 0,
                     liked: false,
@@ -47,70 +47,13 @@ export function Dashboard({ initialUser }) {
             }
         };
 
-        if (currentUser) {
-            initApp();
-        }
-    }, [currentUser]);
 
-    const handleLogout = () => {
-        localStorage.removeItem("auth_token");
-        setPosts([]);
-        navigate("/login");
-    };
+        loadPosts();
+    }, []);
 
-    const handleLike = async (id) => {
+    const handlePost = async (content, image) => {
         try {
-            const post = posts.find((p) => p.id === id);
-            if (post.liked) {
-                await api.posts.unlike(id);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id
-                            ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
-                            : p,
-                    ),
-                );
-            } else {
-                await api.posts.like(id);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
-                    ),
-                );
-            }
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    const handleFollow = async (postId) => {
-        try {
-            const post = posts.find((p) => p.id === postId);
-            if (!post) return;
-
-            if (post.isFollowing) {
-                await api.users.unfollow(post.user.id);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === postId ? { ...p, isFollowing: false } : p,
-                    ),
-                );
-            } else {
-                await api.users.follow(post.user.id);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === postId ? { ...p, isFollowing: true } : p,
-                    ),
-                );
-            }
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    const handlePost = async (content) => {
-        try {
-            await api.posts.create({ content });
+            await api.posts.create({ content, image });
             const feedPosts = await api.feed.getPersonal();
             const transformedPosts = feedPosts.map((post) => ({
                 id: String(post.id),
@@ -120,7 +63,7 @@ export function Dashboard({ initialUser }) {
                     handle: post.username,
                 },
                 content: post.content,
-                image: post.image_path,
+                image: post.image_path ? `${IMAGE_BASE}${post.image_path}` : null,
                 timestamp: new Date(post.created_at).toLocaleDateString(),
                 likes: post.like_count || 0,
                 liked: false,

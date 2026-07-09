@@ -33,6 +33,16 @@ function AppRoutes() {
                 }
             />
             <Route
+                path="/explore/hashtag"
+                element={
+                    <ProtectedRoute>
+                        <Layout>
+                            <ExplorePage />
+                        </Layout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/notifications"
                 element={
                     <ProtectedRoute>
@@ -44,6 +54,16 @@ function AppRoutes() {
             />
             <Route
                 path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <Layout>
+                            <ProfilePage />
+                        </Layout>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/profile/:username"
                 element={
                     <ProtectedRoute>
                         <Layout>

@@ -29,6 +29,12 @@ router.get("/", auth, (req, res) => {
           WHERE likes.post_id = posts.id
         ) AS like_count,
 
+        (
+          SELECT COUNT(*)
+          FROM likes
+          WHERE likes.post_id = posts.id AND likes.user_id = ?
+        ) AS liked,
+
         CASE
           WHEN EXISTS (
             SELECT 1 FROM follows
@@ -52,7 +58,7 @@ router.get("/", auth, (req, res) => {
         )
 
       ORDER BY posts.created_at DESC
-    `).all(req.user.id, req.user.id, req.user.id);
+    `).all(req.user.id, req.user.id, req.user.id, req.user.id);
 
     res.json(posts);
 
@@ -90,6 +96,12 @@ router.get("/public", auth.optionalAuth, (req, res) => {
           WHERE likes.post_id = posts.id
         ) AS like_count,
 
+        ${currentUser?.id ? `(
+          SELECT COUNT(*)
+          FROM likes
+          WHERE likes.post_id = posts.id AND likes.user_id = ?
+        ) AS liked` : "0 AS liked"},
+
         CASE
           WHEN ? IS NOT NULL AND EXISTS (
             SELECT 1 FROM follows
@@ -104,7 +116,7 @@ router.get("/public", auth.optionalAuth, (req, res) => {
         ON users.id = posts.user_id
 
       ORDER BY posts.created_at DESC
-    `).all(currentUser?.id, currentUser?.id);
+    `).all(...(currentUser?.id ? [currentUser.id, currentUser.id, currentUser.id] : [null, null]));
 
     res.json(posts);
 

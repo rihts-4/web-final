@@ -2,6 +2,41 @@ import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { api } from "../../services/api";
 
+function timeAgo(dateStr) {
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    const diff = Math.max(0, now - then);
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}d`;
+    return `${Math.floor(days / 30)}mo`;
+}
+
+function formatNotif(n) {
+    const emojiMap = {
+        like: "❤️",
+        follow: "👤",
+        reply: "💬",
+    };
+    const actionMap = {
+        like: n.post_content ? `liked your thought: "${n.post_content.slice(0, 60)}${n.post_content.length > 60 ? "…" : ""}"` : "liked your thought",
+        follow: "started following you",
+        reply: `replied: "${n.post_content?.slice(0, 60) || ""}${n.post_content?.length > 60 ? "…" : ""}"`,
+    };
+    return {
+        id: n.id,
+        emoji: emojiMap[n.type] || "🔔",
+        user: n.display_name,
+        handle: n.username,
+        action: actionMap[n.type] || "interacted with you",
+        time: timeAgo(n.created_at),
+    };
+}
+
 export function NotificationsPage() {
     const [notifs, setNotifs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -10,7 +45,7 @@ export function NotificationsPage() {
         const loadNotifications = async () => {
             try {
                 const data = await api.notifications.get();
-                setNotifs(data);
+                setNotifs(data.map(formatNotif));
             } catch (err) {
                 console.error("Failed to load notifications:", err);
                 setNotifs([]);
@@ -21,46 +56,6 @@ export function NotificationsPage() {
 
         loadNotifications();
     }, []);
-
-    const mockNotifs = [
-        {
-            emoji: "❤️",
-            user: "Amara Sol",
-            handle: "amarasol",
-            action: "liked your thought",
-            time: "2h",
-        },
-        {
-            emoji: "👁",
-            user: "Rowan Ashby",
-            handle: "rowanashby",
-            action: "started following you",
-            time: "4h",
-        },
-        {
-            emoji: "🔁",
-            user: "Zara Finch",
-            handle: "zarafinch",
-            action: "re-rooted your thought",
-            time: "6h",
-        },
-        {
-            emoji: "💬",
-            user: "Felix Osei",
-            handle: "felixosei",
-            action: 'replied: "Couldn\'t agree more."',
-            time: "8h",
-        },
-        {
-            emoji: "❤️",
-            user: "Mila Voss",
-            handle: "milavoss",
-            action: "liked your thought",
-            time: "1d",
-        },
-    ];
-
-    const displayNotifs = notifs.length > 0 ? notifs : mockNotifs;
 
     return (
         <div
@@ -85,7 +80,7 @@ export function NotificationsPage() {
                 <div className="flex items-center justify-center flex-1">
                     <p className="text-muted-foreground">Loading notifications...</p>
                 </div>
-            ) : displayNotifs.length === 0 ? (
+            ) : notifs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center flex-1 text-center px-8">
                     <span className="text-5xl mb-4">🔔</span>
                     <h2
@@ -99,9 +94,9 @@ export function NotificationsPage() {
                     </p>
                 </div>
             ) : (
-                displayNotifs.map((n, i) => (
+                notifs.map((n) => (
                 <div
-                    key={i}
+                    key={n.id}
                     className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-secondary/40"
                     style={{
                         borderBottom: "1px solid rgba(42,42,37,0.06)",

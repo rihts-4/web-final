@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { DeckFeed } from "../DeckFeed";
 import { useUser } from "../../context/UserContext";
-import { api } from "../../services/api";
+import { api, IMAGE_BASE } from "../../services/api";
 
 export function HomePage() {
     const { user } = useUser();
@@ -23,10 +23,10 @@ export function HomePage() {
                         handle: post.username,
                     },
                     content: post.content,
-                    image: post.image_path,
+                    image: post.image_path ? `${IMAGE_BASE}${post.image_path}` : null,
                     timestamp: new Date(post.created_at).toLocaleDateString(),
                     likes: post.like_count || 0,
-                    liked: false,
+                    liked: post.liked === 1,
                     isFollowing: post.is_following === 1,
                 }));
                 setPosts(transformedPosts);

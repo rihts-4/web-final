@@ -1,9 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Compass, Search } from "lucide-react";
-import { api } from "../../services/api";
+import { api, IMAGE_BASE } from "../../services/api";
+import { useUser } from "../../context/UserContext";
+import { DeckFeed } from "../DeckFeed";
 
 export function ExplorePage() {
-    const [selectedTag, setSelectedTag] = useState(null);
+    const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const { user: contextUser } = useUser();
+    const selectedTag = searchParams.get("q") || null;
     const [selectedPosts, setSelectedPosts] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState(null);
@@ -15,6 +21,35 @@ export function ExplorePage() {
             setTopics(data.hashtags || []);
         }).catch(() => {});
     }, []);
+
+    const fetchHashtagPosts = useCallback(async (tag) => {
+        if (!tag) { setSelectedPosts([]); return; }
+        try {
+            const posts = await api.search.hashtag(tag);
+            setSelectedPosts(
+                posts.map((post) => ({
+                    id: String(post.id),
+                    userId: post.user_id,
+                    user: {
+                        name: post.display_name,
+                        handle: post.username,
+                    },
+                    content: post.content,
+                    image: post.image_path ? `${IMAGE_BASE}${post.image_path}` : null,
+                    timestamp: new Date(post.created_at).toLocaleDateString(),
+                    likes: post.like_count,
+                    liked: post.liked === 1,
+                    isFollowing: post.is_following || false,
+                })),
+            );
+        } catch {
+            setSelectedPosts([]);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchHashtagPosts(selectedTag);
+    }, [selectedTag, fetchHashtagPosts]);
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) {
@@ -40,13 +75,54 @@ export function ExplorePage() {
         }
     };
 
-    const handleTagClick = async (tag) => {
-        setSelectedTag(tag);
+    const handleTagClick = (tag) => {
+        navigate(`/explore/hashtag?q=${encodeURIComponent(tag)}`);
+    };
+
+    const handleLike = async (id) => {
         try {
-            const posts = await api.search.hashtag(tag);
-            setSelectedPosts(posts);
-        } catch {
-            setSelectedPosts([]);
+            const post = selectedPosts.find((p) => p.id === id);
+            if (!post) return;
+            if (post.liked) {
+                await api.posts.unlike(id);
+                setSelectedPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === id
+                            ? { ...p, liked: false, likes: p.likes - 1 }
+                            : p,
+                    ),
+                );
+            } else {
+                await api.posts.like(id);
+                setSelectedPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === id
+                            ? { ...p, liked: true, likes: p.likes + 1 }
+                            : p,
+                    ),
+                );
+            }
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const handlePostFollow = async (postId) => {
+        const post = selectedPosts.find((p) => p.id === postId);
+        if (!post) return;
+        try {
+            if (post.isFollowing) {
+                await api.users.unfollow(post.userId);
+            } else {
+                await api.users.follow(post.userId);
+            }
+            setSelectedPosts((prev) =>
+                prev.map((p) =>
+                    p.id === postId ? { ...p, isFollowing: !p.isFollowing } : p,
+                ),
+            );
+        } catch (err) {
+            alert(err.message);
         }
     };
 
@@ -63,7 +139,7 @@ export function ExplorePage() {
                     }}
                 >
                     <button
-                        onClick={() => { setSelectedTag(null); setSelectedPosts([]); }}
+                        onClick={() => navigate("/explore")}
                         className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary transition-colors"
                     >
                         ←
@@ -80,20 +156,18 @@ export function ExplorePage() {
                         </p>
                     </div>
                 </div>
-                <div className="flex-1 overflow-y-auto px-5 py-4">
+                <div className="flex-1">
                     {selectedPosts.length === 0 ? (
-                        <p className="text-muted-foreground text-[13px] text-center mt-8">No thoughts with this tag yet.</p>
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-muted-foreground text-[13px]">No thoughts with this tag yet.</p>
+                        </div>
                     ) : (
-                        selectedPosts.map((post) => (
-                            <div
-                                key={post.id}
-                                className="p-4 rounded-2xl mb-3"
-                                style={{ background: "#FDFAF4", border: "1px solid rgba(42,42,37,0.08)" }}
-                            >
-                                <p className="text-foreground text-[14px] leading-relaxed mb-2">{post.content}</p>
-                                <p className="text-muted-foreground text-[12px]">by @{post.username}</p>
-                            </div>
-                        ))
+                        <DeckFeed
+                            posts={selectedPosts}
+                            onLike={handleLike}
+                            onFollow={handlePostFollow}
+                            currentUserHandle={contextUser?.username}
+                        />
                     )}
                 </div>
             </div>
@@ -182,6 +256,7 @@ export function ExplorePage() {
                                 {searchResults.users.map((u) => (
                                     <div
                                         key={u.id}
+                                        onClick={() => navigate(`/profile/${u.username}`)}
                                         className="p-3 rounded-xl mb-2 cursor-pointer transition-colors hover:bg-secondary/40"
                                         style={{ background: "#FDFAF4", border: "1px solid rgba(42,42,37,0.08)" }}
                                     >

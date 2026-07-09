@@ -1,19 +1,24 @@
 import { useState, useEffect } from "react";
-import { MapPin, Link2, Calendar } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Calendar } from "lucide-react";
 import { UserAvatar } from "./ThoughtCard";
 import { useUser } from "../context/UserContext";
-import { api } from "../services/api";
+import { api, IMAGE_BASE } from "../services/api";
 import { DeckFeed } from "./DeckFeed";
 
 export function ProfilePage() {
-  const { user, setUser } = useUser();
+  const { username } = useParams();
+  const navigate = useNavigate();
+  const { user: contextUser, setUser } = useUser();
+  const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [profileData, setProfileData] = useState(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const targetUsername = username || contextUser?.username;
+
   useEffect(() => {
-    if (!user) {
+    if (!contextUser) {
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         try {
@@ -24,39 +29,43 @@ export function ProfilePage() {
         }
       }
     }
-  }, [user, setUser]);
+  }, [contextUser, setUser]);
 
   useEffect(() => {
-    if (user) {
-      const fetchProfileData = async () => {
+    if (targetUsername) {
+      const fetchProfile = async () => {
         try {
-          const data = await api.users.getProfile(user.username);
-          setProfileData(data);
-          
+          const data = await api.users.getProfile(targetUsername);
+          setProfile(data);
+          setIsFollowing(data.isFollowing || false);
+
+          const isOwnProfile = !username || username === contextUser?.username;
+          const displayUser = isOwnProfile ? contextUser : data.user;
+
           const transformedPosts = (data.posts || []).map((post) => ({
             id: String(post.id),
             userId: post.user_id,
             user: {
-              name: user.display_name,
-              handle: user.username,
+              name: displayUser?.display_name || data.user.display_name,
+              handle: displayUser?.username || data.user.username,
             },
             content: post.content,
-            image: post.image_path,
+            image: post.image_path ? `${IMAGE_BASE}${post.image_path}` : null,
             timestamp: new Date(post.created_at).toLocaleDateString(),
             likes: post.like_count || 0,
-            liked: false,
+            liked: post.liked === 1,
             isFollowing: post.is_following === 1,
           }));
           setPosts(transformedPosts);
         } catch (err) {
-          console.error("Failed to fetch profile data:", err);
+          console.error("Failed to fetch profile:", err);
         }
       };
-      fetchProfileData();
+      fetchProfile();
     }
-  }, [user]);
+  }, [targetUsername, username, contextUser]);
 
-  if (!user) {
+  if (!profile) {
     return (
       <div className="h-full flex items-center justify-center">
         <p className="text-muted-foreground">Loading profile...</p>
@@ -64,16 +73,49 @@ export function ProfilePage() {
     );
   }
 
+  const isOwnProfile = !username || username === contextUser?.username;
+
+  const handleFollowToggle = async () => {
+    try {
+      setIsLoading(true);
+      if (isFollowing) {
+        await api.users.unfollow(profile.user.id);
+        setIsFollowing(false);
+      } else {
+        await api.users.follow(profile.user.id);
+        setIsFollowing(true);
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLike = async (id) => {
-    console.log("Like post:", id);
-  };
-
-  const handleRepost = async (id) => {
-    console.log("Repost:", id);
-  };
-
-  const handleBookmark = async (id) => {
-    console.log("Bookmark:", id);
+    try {
+      const post = posts.find((p) => p.id === id);
+      if (!post) return;
+      if (post.liked) {
+        await api.posts.unlike(id);
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === id
+              ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
+              : p,
+          ),
+        );
+      } else {
+        await api.posts.like(id);
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
+          ),
+        );
+      }
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const handlePostFollow = async (id) => {
@@ -100,29 +142,28 @@ export function ProfilePage() {
     }
   };
 
-  const handleFollowToggle = async () => {
-    try {
-      setIsLoading(true);
-      if (isFollowing) {
-        await api.users.unfollow(user.id);
-        setIsFollowing(false);
-      } else {
-        await api.users.follow(user.id);
-        setIsFollowing(true);
-      }
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div
       className="flex flex-col h-full overflow-y-auto"
       style={{ fontFamily: "'Nunito', sans-serif" }}
     >
-      {/* Profile Header */}
+      {!isOwnProfile && (
+        <div
+          className="px-5 py-3 flex-shrink-0"
+          style={{
+            borderBottom: "1px solid rgba(42,42,37,0.08)",
+          }}
+        >
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-[14px]"
+            style={{ color: "#6B8F5E", fontWeight: 700 }}
+          >
+            ← Back
+          </button>
+        </div>
+      )}
+
       <div
         className="px-5 pt-4 pb-4 flex-shrink-0"
         style={{
@@ -131,67 +172,63 @@ export function ProfilePage() {
       >
         <div className="flex items-start gap-4 justify-between">
           <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <UserAvatar handle={user.username} name={user.display_name} size={64} />
+            <UserAvatar handle={profile.user.username} name={profile.user.display_name} size={64} />
 
-            {/* User Info */}
             <div className="flex-1 min-w-0">
-            <h1
-              className="text-foreground text-[20px] mb-0.5"
-              style={{ fontWeight: 800 }}
-            >
-              {user.display_name}
-            </h1>
-            <p className="text-muted-foreground text-[14px] mb-3">
-              @{user.username}
-            </p>
+              <h1
+                className="text-foreground text-[20px] mb-0.5"
+                style={{ fontWeight: 800 }}
+              >
+                {profile.user.display_name}
+              </h1>
+              <p className="text-muted-foreground text-[14px] mb-3">
+                @{profile.user.username}
+              </p>
 
-            {/* Bio */}
-            <p className="text-foreground text-[14px] leading-relaxed mb-3">
-              Thoughts matter. Ideas grow in good soil.
-            </p>
+              <p className="text-foreground text-[14px] leading-relaxed mb-3">
+                Thoughts matter. Ideas grow in good soil.
+              </p>
 
-            {/* Meta Info */}
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
-                <span style={{ fontWeight: 700, color: "#2A2A25" }}>
-                  {profileData?.followers || 0}
-                </span>
-                <span>Followers</span>
-              </div>
-              <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
-                <span style={{ fontWeight: 700, color: "#2A2A25" }}>
-                  {profileData?.following || 0}
-                </span>
-                <span>Following</span>
-              </div>
-              <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
-                <Calendar size={14} />
-                <span>Joined {new Date().toLocaleDateString()}</span>
+              <div className="flex flex-wrap gap-4">
+                <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
+                  <span style={{ fontWeight: 700, color: "#2A2A25" }}>
+                    {profile.followers || 0}
+                  </span>
+                  <span>Followers</span>
+                </div>
+                <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
+                  <span style={{ fontWeight: 700, color: "#2A2A25" }}>
+                    {profile.following || 0}
+                  </span>
+                  <span>Following</span>
+                </div>
+                <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
+                  <Calendar size={14} />
+                  <span>Joined {new Date(profile.user.created_at).toLocaleDateString()}</span>
+                </div>
               </div>
             </div>
           </div>
-          </div>
 
-          {/* Follow Button */}
-          <button
-            onClick={handleFollowToggle}
-            disabled={isLoading}
-            className="px-6 py-2 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
-            style={{
-              background: isFollowing ? "rgba(107,143,94,0.12)" : "#6B8F5E",
-              color: isFollowing ? "#6B8F5E" : "#FDFAF4",
-              fontWeight: 700,
-              border: isFollowing ? "1.5px solid #6B8F5E" : "none",
-              opacity: isLoading ? 0.6 : 1,
-            }}
-          >
-            {isLoading ? "..." : isFollowing ? "Following" : "Follow"}
-          </button>
+          {!isOwnProfile && (
+            <button
+              onClick={handleFollowToggle}
+              disabled={isLoading}
+              className="px-6 py-2 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
+              style={{
+                background: isFollowing ? "rgba(107,143,94,0.12)" : "#6B8F5E",
+                color: isFollowing ? "#6B8F5E" : "#FDFAF4",
+                fontWeight: 700,
+                border: isFollowing ? "1.5px solid #6B8F5E" : "none",
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            >
+              {isLoading ? "..." : isFollowing ? "Following" : "Follow"}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Posts Tab */}
       <div
         className="px-5 py-3 flex-shrink-0"
         style={{
@@ -202,11 +239,10 @@ export function ProfilePage() {
           className="text-foreground text-[15px]"
           style={{ fontWeight: 700 }}
         >
-          Your Thoughts
+          {isOwnProfile ? "Your Thoughts" : "Thoughts"}
         </h2>
       </div>
 
-      {/* Posts Feed */}
       {posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 text-center px-8">
           <span className="text-5xl mb-4">🌱</span>
@@ -217,7 +253,9 @@ export function ProfilePage() {
             No thoughts yet
           </h2>
           <p className="text-muted-foreground text-[14px] leading-relaxed">
-            Start sharing your thoughts to grow your garden.
+            {isOwnProfile
+              ? "Start sharing your thoughts to grow your garden."
+              : "This user hasn't shared any thoughts yet."}
           </p>
         </div>
       ) : (
@@ -225,9 +263,7 @@ export function ProfilePage() {
           posts={posts}
           onLike={handleLike}
           onFollow={handlePostFollow}
-          onRepost={handleRepost}
-          onBookmark={handleBookmark}
-          currentUserHandle={user?.username}
+          currentUserHandle={contextUser?.username}
         />
       )}
     </div>

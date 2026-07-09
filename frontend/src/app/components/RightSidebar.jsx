@@ -1,6 +1,6 @@
 import { TrendingUp } from "lucide-react";
 
-export function RightSidebar({ hashtags, users, onTopicClick }) {
+export function RightSidebar({ hashtags, users, onTopicClick, onUserClick }) {
   return (
     <aside className="w-[300px] pl-5 flex flex-col gap-5">
       {hashtags.length > 0 && (
@@ -70,7 +70,8 @@ export function RightSidebar({ hashtags, users, onTopicClick }) {
           {users.map((u, i) => (
             <div
               key={i}
-              className="flex items-center gap-2.5 px-4 py-3 mx-1 rounded-xl"
+              onClick={() => onUserClick && onUserClick(u.username)}
+              className="flex items-center gap-2.5 px-4 py-3 mx-1 rounded-xl cursor-pointer transition-colors hover:bg-secondary/60"
             >
               <div
                 className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs"

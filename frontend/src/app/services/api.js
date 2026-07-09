@@ -1,4 +1,5 @@
 const BASE_URL = "http://localhost:3000/api";
+export const IMAGE_BASE = "http://localhost:3000";
 
 async function request(endpoint, options = {}) {
     const token = localStorage.getItem("auth_token");
