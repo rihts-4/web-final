@@ -37,3 +37,12 @@ The frontend depends on the backend API, so also run:
 - `src/app/services/api.js` — API client wrapper
 - `src/app/components/` — pages and reusable components
 - `src/styles/` — global and theme styling
+
+## Frontend routes and page paths
+- `/login` → `src/app/components/LoginPage.jsx`
+- `/` → `src/app/components/pages/HomePage.jsx`
+- `/explore` → `src/app/components/pages/ExplorePage.jsx`
+- `/explore/hashtag` → `src/app/components/pages/ExplorePage.jsx` (hashtag view)
+- `/notifications` → `src/app/components/pages/NotificationsPage.jsx`
+- `/profile` → `src/app/components/ProfilePage.jsx` (current user profile)
+- `/profile/:username` → `src/app/components/ProfilePage.jsx` (public profile by username)
