@@ -1,43 +1,19 @@
 import { useState, useEffect } from "react";
 import { Compass, Search } from "lucide-react";
 import { api } from "../../services/api";
-import { HashtagList } from "../HashtagList";
 
 export function ExplorePage() {
-    const [selectedTopic, setSelectedTopic] = useState(null);
+    const [selectedTag, setSelectedTag] = useState(null);
+    const [selectedPosts, setSelectedPosts] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState(null);
     const [isSearching, setIsSearching] = useState(false);
-    const [trendingTags, setTrendingTags] = useState([]);
+    const [topics, setTopics] = useState([]);
 
     useEffect(() => {
-        const loadTrendingTags = async () => {
-            try {
-                const publicPosts = await api.feed.getPublic();
-                const tagMap = {};
-                
-                publicPosts.forEach((post) => {
-                    const content = post.content || "";
-                    const matches = content.match(/#[a-zA-Z0-9_]+/g) || [];
-                    matches.forEach((tag) => {
-                        const cleanTag = tag.toLowerCase();
-                        tagMap[cleanTag] = (tagMap[cleanTag] || 0) + 1;
-                    });
-                });
-                
-                const sortedTags = Object.entries(tagMap)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 8)
-                    .map(([tag]) => tag.substring(1));
-                
-                setTrendingTags(sortedTags);
-            } catch (err) {
-                console.error("Failed to load trending tags:", err);
-                setTrendingTags([]);
-            }
-        };
-
-        loadTrendingTags();
+        api.feed.getTrending().then((data) => {
+            setTopics(data.hashtags || []);
+        }).catch(() => {});
     }, []);
 
     const handleSearch = async () => {
@@ -64,7 +40,17 @@ export function ExplorePage() {
         }
     };
 
-    if (selectedTopic) {
+    const handleTagClick = async (tag) => {
+        setSelectedTag(tag);
+        try {
+            const posts = await api.search.hashtag(tag);
+            setSelectedPosts(posts);
+        } catch {
+            setSelectedPosts([]);
+        }
+    };
+
+    if (selectedTag) {
         return (
             <div
                 className="flex flex-col h-full"
@@ -77,7 +63,7 @@ export function ExplorePage() {
                     }}
                 >
                     <button
-                        onClick={() => setSelectedTopic(null)}
+                        onClick={() => { setSelectedTag(null); setSelectedPosts([]); }}
                         className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary transition-colors"
                     >
                         ←
@@ -87,12 +73,28 @@ export function ExplorePage() {
                             className="text-foreground text-[18px]"
                             style={{ fontWeight: 800 }}
                         >
-                            {selectedTopic}
+                            #{selectedTag}
                         </h1>
                         <p className="text-muted-foreground text-[12px]">
-                            Top thoughts in this category
+                            {selectedPosts.length} {selectedPosts.length === 1 ? "thought" : "thoughts"}
                         </p>
                     </div>
+                </div>
+                <div className="flex-1 overflow-y-auto px-5 py-4">
+                    {selectedPosts.length === 0 ? (
+                        <p className="text-muted-foreground text-[13px] text-center mt-8">No thoughts with this tag yet.</p>
+                    ) : (
+                        selectedPosts.map((post) => (
+                            <div
+                                key={post.id}
+                                className="p-4 rounded-2xl mb-3"
+                                style={{ background: "#FDFAF4", border: "1px solid rgba(42,42,37,0.08)" }}
+                            >
+                                <p className="text-foreground text-[14px] leading-relaxed mb-2">{post.content}</p>
+                                <p className="text-muted-foreground text-[12px]">by @{post.username}</p>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         );
@@ -168,7 +170,7 @@ export function ExplorePage() {
                                         style={{ background: "#FDFAF4", border: "1px solid rgba(42,42,37,0.08)" }}
                                     >
                                         <p className="text-foreground text-[13px] line-clamp-2">{post.content}</p>
-                                        <p className="text-muted-foreground text-[11px] mt-1">by @{post.user.username}</p>
+                                        <p className="text-muted-foreground text-[11px] mt-1">by @{post.username}</p>
                                     </div>
                                 ))}
                             </div>
@@ -197,7 +199,7 @@ export function ExplorePage() {
                     </div>
                 )}
 
-                {!searchResults && (
+                {!searchResults && topics.length > 0 && (
                 <div>
                     <h2
                         className="text-[13px] uppercase tracking-wider mb-3"
@@ -206,43 +208,10 @@ export function ExplorePage() {
                         Topics
                     </h2>
                     <div className="grid grid-cols-2 gap-2.5">
-                        {[
-                            {
-                                label: "Slow Living",
-                                emoji: "🍃",
-                                count: "24.8K",
-                            },
-                            {
-                                label: "Ecology",
-                                emoji: "🌿",
-                                count: "12.4K",
-                            },
-                            {
-                                label: "Design",
-                                emoji: "✏️",
-                                count: "55K",
-                            },
-                            {
-                                label: "Mindfulness",
-                                emoji: "🧘",
-                                count: "8.9K",
-                            },
-                            {
-                                label: "Sustainability",
-                                emoji: "♻️",
-                                count: "41K",
-                            },
-                            {
-                                label: "Science",
-                                emoji: "🔬",
-                                count: "18K",
-                            },
-                        ].map((cat) => (
+                        {topics.map((t) => (
                             <div
-                                key={cat.label}
-                                onClick={() =>
-                                    setSelectedTopic(cat.label)
-                                }
+                                key={t.tag}
+                                onClick={() => handleTagClick(t.tag)}
                                 className="flex flex-col gap-1.5 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-md"
                                 style={{
                                     background: "#FDFAF4",
@@ -257,23 +226,19 @@ export function ExplorePage() {
                                         "rgba(42,42,37,0.08)";
                                 }}
                             >
-                                <span className="text-2xl">
-                                    {cat.emoji}
-                                </span>
+                                <span className="text-2xl">#</span>
                                 <span
                                     className="text-foreground text-[14px]"
                                     style={{ fontWeight: 700 }}
                                 >
-                                    {cat.label}
+                                    {t.tag}
                                 </span>
                                 <span className="text-muted-foreground text-[12px]">
-                                    {cat.count} thoughts
+                                    {t.count} {t.count === 1 ? "thought" : "thoughts"}
                                 </span>
                             </div>
                         ))}
                     </div>
-
-                    <HashtagList title="Trending tags" />
                 </div>
                 )}
             </div>

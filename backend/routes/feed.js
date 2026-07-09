@@ -117,4 +117,40 @@ router.get("/public", auth.optionalAuth, (req, res) => {
   }
 });
 
+/**
+ * Trending data for the right sidebar
+ * Returns top 3 hashtags and top 3 users by post count
+ */
+router.get("/trending", (req, res) => {
+  try {
+
+    const hashtags = db.prepare(`
+      SELECT hashtags.tag, COUNT(*) AS count
+      FROM post_hashtags
+      JOIN hashtags ON hashtags.id = post_hashtags.hashtag_id
+      GROUP BY hashtags.tag
+      ORDER BY count DESC
+      LIMIT 3
+    `).all();
+
+    const users = db.prepare(`
+      SELECT users.id, users.username, users.display_name, COUNT(*) AS post_count
+      FROM posts
+      JOIN users ON users.id = posts.user_id
+      GROUP BY users.id
+      ORDER BY post_count DESC
+      LIMIT 3
+    `).all();
+
+    res.json({ hashtags, users });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to retrieve trending data"
+    });
+  }
+});
+
 module.exports = router;

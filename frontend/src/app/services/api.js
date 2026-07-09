@@ -45,6 +45,7 @@ export const api = {
     feed: {
         getPersonal: () => request("/feed"),
         getPublic: () => request("/feed/public"),
+        getTrending: () => request("/feed/trending"),
     },
     posts: {
         create: (postData) => {

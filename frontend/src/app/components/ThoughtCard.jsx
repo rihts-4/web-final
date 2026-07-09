@@ -121,7 +121,7 @@ export function ThoughtCard({
     const [dragX, setDragX] = useState(0);
     const [dragging, setDragging] = useState(false);
 
-    // "like" = dragging right | null = neutral
+    // "like" = dragging right | "skip" = dragging left | null = neutral
     const [gesture, setGesture] = useState(null);
 
     const THRESHOLD = 90;
@@ -145,7 +145,9 @@ export function ThoughtCard({
             const dy = Math.abs(e.clientY - origin.current.y);
             if (Math.abs(dx) > 8 || dy > 8) moved.current = true;
             setDragX(dx);
-            setGesture(dx > 30 ? "like" : null);
+            if (dx > 30) setGesture("like");
+            else if (dx < -30) setGesture("skip");
+            else setGesture(null);
         },
         [isTop],
     );
@@ -155,6 +157,7 @@ export function ThoughtCard({
         if (moved.current) {
             if (dragX > THRESHOLD) {
                 onLike(post.id);
+            } else if (dragX < -THRESHOLD) {
                 onSwipedAway?.();
             }
         }
@@ -166,7 +169,7 @@ export function ThoughtCard({
 
     const rotation = dragging ? dragX * 0.06 : 0;
     const washAlpha = Math.max(0, Math.abs(dragX) - 30) / 220;
-    const likeAlpha = gesture === "like" ? Math.min(1, (dragX - 30) / 60) : 0;
+    const gestureAlpha = gesture ? Math.min(1, (Math.abs(dragX) - 30) / 60) : 0;
 
     return (
         <div
@@ -191,7 +194,7 @@ export function ThoughtCard({
             }}
         >
             {/* ── Colour wash (z:1) ─────────────────────────── */}
-            {dragging && (
+            {dragging && gesture && (
                 <div
                     className="absolute inset-0 rounded-3xl pointer-events-none"
                     style={{
@@ -199,7 +202,7 @@ export function ThoughtCard({
                         background:
                             gesture === "like"
                                 ? `rgba(107,143,94,${washAlpha})`
-                                : "transparent",
+                                : `rgba(192,69,58,${washAlpha * 0.4})`,
                     }}
                 />
             )}
@@ -221,8 +224,8 @@ export function ThoughtCard({
                             position: "absolute",
                             top: 16,
                             left: 12,
-                            opacity: likeAlpha,
-                            transform: `rotate(-14deg) scale(${0.82 + likeAlpha * 0.18})`,
+                            opacity: gesture === "like" ? gestureAlpha : 0,
+                            transform: `rotate(-14deg) scale(${0.82 + gestureAlpha * 0.18})`,
                             transition: dragging ? "none" : "opacity 0.15s",
                         }}
                     >
@@ -233,7 +236,7 @@ export function ThoughtCard({
                                 gap: 6,
                                 padding: "7px 14px",
                                 borderRadius: 14,
-                                background: "#FDFAF4" /* fully opaque */,
+                                background: "#FDFAF4",
                                 border: "2.5px solid #6B8F5E",
                                 boxShadow: "0 4px 18px rgba(107,143,94,0.28)",
                                 fontFamily: "'Nunito', sans-serif",
@@ -246,6 +249,36 @@ export function ThoughtCard({
                         </span>
                     </div>
 
+                    {/* Skip badge — top-right */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            top: 16,
+                            right: 12,
+                            opacity: gesture === "skip" ? gestureAlpha : 0,
+                            transform: `rotate(14deg) scale(${0.82 + gestureAlpha * 0.18})`,
+                            transition: dragging ? "none" : "opacity 0.15s",
+                        }}
+                    >
+                        <span
+                            style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "7px 14px",
+                                borderRadius: 14,
+                                background: "#FDFAF4",
+                                border: "2.5px solid #C0453A",
+                                boxShadow: "0 4px 18px rgba(192,69,58,0.28)",
+                                fontFamily: "'Nunito', sans-serif",
+                                fontSize: 14,
+                                fontWeight: 800,
+                                color: "#C0453A",
+                            }}
+                        >
+                            → Skip
+                        </span>
+                    </div>
                 </div>
             )}
 
@@ -337,8 +370,7 @@ export function ThoughtCard({
                 )}
 
                 {/* ── Action bar ─────────────────────────────────────
-             Two swipe gestures: right → Like, left → Re-root.
-             Four tap buttons for non-swipe interactions.
+             Two swipe gestures: right → Like, left → Skip.
           ──────────────────────────────────────────────────── */}
                 <div
                     className="flex items-center justify-between mt-4"
@@ -350,6 +382,7 @@ export function ThoughtCard({
                 {/* ── Action bar ─────────────────────────────────────
               Like button + Follow button (if not self).
            ──────────────────────────────────────────────────── */}
+            
                 <div
                     className="flex items-center justify-between mt-4"
                     style={{
@@ -371,7 +404,7 @@ export function ThoughtCard({
                         }
                         label={formatCount(post.likes + (post.liked ? 1 : 0))}
                         activeColor={post.liked ? "#C0453A" : null}
-                        tooltip="Like — or swipe right →"
+                        tooltip="Like — swipe right →"
                     />
 
                     {currentUserHandle !== post.user.handle && (
@@ -395,7 +428,7 @@ export function ThoughtCard({
                             fontFamily: "'Nunito', sans-serif",
                         }}
                     >
-                        swipe →
+                        ← swipe →
                     </span>
                 </div>
                 </div>

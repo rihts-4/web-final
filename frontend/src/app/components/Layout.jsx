@@ -29,6 +29,11 @@ export function Layout({ children }) {
     const [showCompose, setShowCompose] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [replyPost, setReplyPost] = useState(null);
+    const [trending, setTrending] = useState({ hashtags: [], users: [] });
+
+    useEffect(() => {
+      api.feed.getTrending().then(setTrending).catch(() => {});
+    }, []);
 
     const getActiveNav = () => {
         const path = location.pathname;
@@ -89,13 +94,17 @@ export function Layout({ children }) {
                 </div>
             </main>
 
-            <div className="hidden lg:flex flex-col overflow-y-auto py-4">
-                <RightSidebar
-                    onTopicClick={(topic) => {
-                        navigate("/explore");
-                    }}
-                />
-            </div>
+            {(trending.hashtags.length > 0 || trending.users.length > 0) && (
+                <div className="hidden lg:flex flex-col overflow-y-auto py-4">
+                    <RightSidebar
+                        hashtags={trending.hashtags}
+                        users={trending.users}
+                        onTopicClick={(topic) => {
+                            navigate("/explore");
+                        }}
+                    />
+                </div>
+            )}
 
             {showOnboarding && (
                 <OnboardingModal onDismiss={() => setShowOnboarding(false)} />

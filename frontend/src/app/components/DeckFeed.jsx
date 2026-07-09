@@ -4,12 +4,14 @@ import { ThoughtCard } from "./ThoughtCard";
 export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
   const [topIndex, setTopIndex] = useState(0);
 
-  const advance = () => setTopIndex((i) => Math.min(i + 1, posts.length - 1));
+  const advance = () => setTopIndex((i) => Math.min(i + 1, posts.length));
   const retreat = () => setTopIndex((i) => Math.max(i - 1, 0));
+  const resetToStart = () => setTopIndex(0);
 
   const visible = posts.slice(topIndex, topIndex + 3);
+  const isAllCaughtUp = topIndex >= posts.length && posts.length > 0;
 
-  if (posts.length === 0) {
+  if (posts.length === 0 || isAllCaughtUp) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-8">
         <div
@@ -25,8 +27,23 @@ export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
           All caught up
         </h2>
         <p className="text-muted-foreground text-[15px]">
-          You've read every thought. Come back later.
+          {posts.length === 0
+            ? "You've read every thought. Come back later."
+            : "You've seen all the thoughts in your feed."}
         </p>
+        {isAllCaughtUp && (
+          <button
+            onClick={resetToStart}
+            className="mt-5 px-6 py-2.5 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95"
+            style={{
+              background: "#6B8F5E",
+              color: "#FDFAF4",
+              fontWeight: 700,
+            }}
+          >
+            ← Start over
+          </button>
+        )}
       </div>
     );
   }
@@ -55,7 +72,6 @@ export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
 
       {/* Card stack */}
       <div className="relative flex-1 mx-4 mb-4">
-        {/* Stacked cards behind (render in reverse so front card is on top) */}
         {[...visible].reverse().map((post, revIdx) => {
           const stackIdx = visible.length - 1 - revIdx;
           const isTop = stackIdx === 0;
@@ -67,7 +83,6 @@ export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
               post={post}
               onLike={(id) => {
                 onLike(id);
-                if (isTop) advance();
               }}
               onFollow={onFollow}
               currentUserHandle={currentUserHandle}

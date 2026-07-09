@@ -5,44 +5,38 @@ const STEPS = [
   {
     emoji: "🌿",
     title: "Welcome to Grove",
-    body: "Grove is a slow, intentional microblogging space — designed to help you share ideas without noise. No algorithmic rage, no infinite scroll.",
+    body: "Grove is a slow, intentional microblogging space — designed to help you share ideas without noise. Read one thought at a time, share what matters, and tend your garden.",
     highlight: null,
   },
   {
     emoji: "🃏",
     title: "Thought Cards",
-    body: "Posts in Grove are called Thoughts. They appear as stacked cards — one at a time — so you can read fully before moving on. Use the Back / Next buttons, or swipe.",
+    body: "Posts appear as stacked cards — one at a time — so you can focus. Use the Back / Next buttons below the card, or swipe left to move to the next thought.",
     highlight: "One thought at a time. Read it. Then decide.",
   },
   {
     emoji: "👆",
     title: "Swipe to interact",
-    body: "Drag a card right to Like it. Drag it left to open the reply thread. You can also tap the buttons on the card — swiping is just a shortcut.",
+    body: "Swipe a card right to Like it. Swipe left to skip to the next thought. You can also tap the buttons on the card — swiping is just a shortcut.",
     visual: "swipe",
     highlight: null,
   },
   {
     emoji: "❤️",
-    title: "Likes & Re-roots",
-    body: "Tap the heart to Like a thought. Tap the arrows to Re-root it — Grove's version of a repost. Use the bookmark to save it for later.",
-    highlight: null,
-  },
-  {
-    emoji: "🔖",
-    title: "Sprout — what does it mean?",
-    body: "You may see the word Sprout used in older posts. It was our original name for a Like. We've updated the button to a standard heart, but Sprout still means the same thing: a small signal of appreciation.",
-    highlight: "Sprout = Like. The idea grows when you share appreciation.",
+    title: "Likes & Following",
+    body: "Tap the heart to Like a thought. Follow other users to see their thoughts in your Following feed. The Follow button appears on every card from someone you don't follow yet.",
+    highlight: "Follow the gardeners whose thoughts you want to see.",
   },
   {
     emoji: "🏷️",
-    title: "Tags & Trending",
-    body: "Thoughts can carry #tags. Browse the Explore page to find conversations by topic. Trending tags appear in the right panel.",
+    title: "Explore & Discover",
+    body: "Use the Explore page to search for users and topics. Find new voices and add them to your garden.",
     highlight: null,
   },
   {
     emoji: "🌱",
     title: "You're all set",
-    body: "Your feed is called Your Garden. Tend it thoughtfully. Post when you mean it. Listen before you reply.",
+    body: "Your feed has two tabs: For you and Following. Post your own thoughts from the compose button. Tend your garden thoughtfully.",
     highlight: null,
   },
 ];
@@ -129,7 +123,7 @@ export function OnboardingModal({ onDismiss }) {
                   ← Swipe left
                 </div>
                 <span className="text-[12px] text-muted-foreground">
-                  Open replies
+                  Next thought
                 </span>
               </div>
               <div
@@ -139,7 +133,6 @@ export function OnboardingModal({ onDismiss }) {
                   border: "1.5px solid rgba(42,42,37,0.12)",
                 }}
               />
-
               <div className="flex flex-col items-center gap-1">
                 <div
                   className="flex items-center gap-2 px-4 py-2 rounded-xl border-2 text-[13px]"
