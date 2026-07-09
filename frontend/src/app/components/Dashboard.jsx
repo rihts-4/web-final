@@ -46,10 +46,7 @@ export function Dashboard({ initialUser }) {
                 console.error("Failed to load posts:", err);
             }
         };
-
-
-        loadPosts();
-    }, []);
+        initApp();
 
     const handlePost = async (content, image) => {
         try {
