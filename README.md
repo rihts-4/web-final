@@ -1,9 +1,14 @@
 # Web Final — Social Microblog App
 
+## How to clone the repository
+```bash
+git clone https://github.com/rihts-4/web-final.git
+```
+
 ## How to run the backend
 1. Open a terminal tab and go to:
    ```bash
-   cd /home/runner/work/web-final/web-final/backend
+   cd backend
    ```
 2. Install dependencies:
    ```bash
