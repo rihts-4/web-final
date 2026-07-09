@@ -1,18 +1,22 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
+import { useUser } from "../context/UserContext";
 
-export function LoginPage({ onEnter }) {
+export function LoginPage() {
+    const navigate = useNavigate();
+    const { setUser } = useUser();
     const [isSignUp, setIsSignUp] = useState(false);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [email, setEmail] = useState("");
+    const [display, setDisplay] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const isLoginValid = username.trim() !== "" && password.trim() !== "";
     const isSignUpValid =
         username.trim() !== "" &&
-        email.trim() !== "" &&
+        display.trim() !== "" &&
         password.trim() !== "" &&
         password === confirmPassword;
 
@@ -23,15 +27,19 @@ export function LoginPage({ onEnter }) {
             if (isSignUp && isSignUpValid) {
                 const response = await api.auth.signup({
                     username,
-                    email,
+                    display_name: display,
                     password,
                 });
-                // localStorage.setItem('auth_token', response.token);
-                onEnter();
+                localStorage.setItem("auth_token", response.token);
+                localStorage.setItem("user", JSON.stringify(response.user));
+                setUser(response.user);
+                navigate("/");
             } else if (!isSignUp && isLoginValid) {
                 const response = await api.auth.login({ username, password });
-                // localStorage.setItem('auth_token', response.token);
-                onEnter();
+                localStorage.setItem("auth_token", response.token);
+                localStorage.setItem("user", JSON.stringify(response.user));
+                setUser(response.user);
+                navigate("/");
             }
         } catch (err) {
             alert(err.message);
@@ -171,10 +179,10 @@ export function LoginPage({ onEnter }) {
 
                     {isSignUp && (
                         <input
-                            type="email"
-                            placeholder="Email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            type="text"
+                            placeholder="Display name"
+                            value={display}
+                            onChange={(e) => setDisplay(e.target.value)}
                             className="w-full px-4 py-3 rounded-2xl outline-none transition-all"
                             style={{
                                 background: "#EAE5D8",
@@ -250,7 +258,7 @@ export function LoginPage({ onEnter }) {
                         setIsSignUp(!isSignUp);
                         setUsername("");
                         setPassword("");
-                        setEmail("");
+                        setDisplay("");
                         setConfirmPassword("");
                     }}
                     className="w-full text-center text-[13px] font-bold transition-opacity hover:opacity-70"

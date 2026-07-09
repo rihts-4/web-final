@@ -12,20 +12,14 @@ const voices = [
   {
     name: "Amara Sol",
     handle: "amarasol",
-    avatar:
-      "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=40&h=40&fit=crop&auto=format",
   },
   {
     name: "Zara Finch",
     handle: "zarafinch",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&auto=format",
   },
   {
     name: "Idris Kamara",
     handle: "idriskamara",
-    avatar:
-      "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=40&h=40&fit=crop&auto=format",
   },
 ];
 
@@ -125,15 +119,17 @@ export function RightSidebar({ onTopicClick }) {
             className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-secondary/60 mx-1 rounded-xl"
           >
             <div className="flex items-center gap-2.5">
-              <img
-                src={v.avatar}
-                alt={v.name}
-                className="w-9 h-9 rounded-full object-cover"
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs"
                 style={{
+                  background: "#6B8F5E",
+                  color: "#FDFAF4",
                   outline: "2px solid rgba(107,143,94,0.25)",
                   outlineOffset: 1,
                 }}
-              />
+              >
+                {v.handle?.charAt(0).toUpperCase() || "U"}
+              </div>
               <div>
                 <p
                   className="text-foreground text-[14px]"

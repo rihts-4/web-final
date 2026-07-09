@@ -38,29 +38,15 @@ export function PostCard({ post, onLike, onRepost, onBookmark, onReply }) {
       />
 
       <div className="relative flex-shrink-0">
-        <img
-          src={post.user.avatar}
-          alt={post.user.name}
-          className="w-10 h-10 rounded-full object-cover ring-2 ring-border"
-        />
-
-        {post.user.verified && (
-          <div
-            className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-primary flex items-center justify-center"
-            style={{ width: 18, height: 18 }}
-          >
-            <svg viewBox="0 0 12 12" width={10} height={10} fill="white">
-              <path
-                d="M10 3L4.5 8.5 2 6"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-            </svg>
-          </div>
-        )}
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center ring-2 ring-border text-sm font-bold"
+          style={{
+            background: "#6B8F5E",
+            color: "#FDFAF4",
+          }}
+        >
+          {post.user.handle?.charAt(0).toUpperCase() || "U"}
+        </div>
       </div>
 
       <div className="flex-1 min-w-0">

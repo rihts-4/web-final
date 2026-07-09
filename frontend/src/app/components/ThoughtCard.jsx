@@ -304,10 +304,9 @@ export function ThoughtCard({
                 {/* User header */}
                 <div className="flex items-center gap-3 mb-4">
                     <UserAvatar
-                        avatar={post.user.avatar}
+                        handle={post.user.handle}
                         name={post.user.name}
                         size={44}
-                        verified={post.user.verified}
                     />
 
                     <div className="flex-1 min-w-0">
@@ -466,56 +465,23 @@ export function ThoughtCard({
 
 /* ── UserAvatar ───────────────────────────────────────── */
 
-export function UserAvatar({ avatar, name, size = 40, verified, onClick }) {
-    const badge = Math.round(size * 0.38);
+export function UserAvatar({ handle, name, size = 40, onClick }) {
     return (
         <div
-            className="relative flex-shrink-0"
+            className="relative flex-shrink-0 rounded-full flex items-center justify-center font-bold"
             style={{
                 width: size,
                 height: size,
                 cursor: onClick ? "pointer" : "default",
+                background: "#6B8F5E",
+                color: "#FDFAF4",
+                fontSize: Math.round(size * 0.4),
+                outline: "2.5px solid rgba(107,143,94,0.25)",
+                outlineOffset: 2,
             }}
             onClick={onClick}
         >
-            <img
-                src={avatar}
-                alt={name}
-                className="rounded-full object-cover w-full h-full"
-                style={{
-                    outline: "2.5px solid rgba(107,143,94,0.25)",
-                    outlineOffset: 2,
-                }}
-            />
-
-            {verified && (
-                <div
-                    className="absolute rounded-full flex items-center justify-center"
-                    style={{
-                        width: badge,
-                        height: badge,
-                        bottom: -1,
-                        right: -1,
-                        background: "#6B8F5E",
-                        border: "2px solid #F4F0E6",
-                    }}
-                >
-                    <svg
-                        viewBox="0 0 10 10"
-                        width={badge * 0.58}
-                        height={badge * 0.58}
-                        fill="none"
-                    >
-                        <path
-                            d="M2 5l2 2 4-4"
-                            stroke="white"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </div>
-            )}
+            {handle?.charAt(0).toUpperCase() || "U"}
         </div>
     );
 }

@@ -58,15 +58,17 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
 
         {/* Compose area */}
         <div className="flex gap-3 px-5 pb-4">
-          <img
-            src={currentUser.avatar}
-            alt={currentUser.name}
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0 mt-1"
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 font-bold"
             style={{
+              background: "#6B8F5E",
+              color: "#FDFAF4",
               outline: "2px solid rgba(107,143,94,0.3)",
               outlineOffset: 2,
             }}
-          />
+          >
+            {currentUser?.username?.charAt(0).toUpperCase() || "U"}
+          </div>
 
           <div className="flex-1">
             <textarea
