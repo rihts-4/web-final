@@ -1,20 +1,26 @@
+import { useNavigate } from "react-router-dom";
 import { Home, Compass, Bell, Bookmark, User, PenLine } from "lucide-react";
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "explore", label: "Explore", icon: Compass },
-  { id: "notifications", label: "Ripples", icon: Bell },
-  { id: "bookmarks", label: "Saved", icon: Bookmark },
-  { id: "profile", label: "Profile", icon: User },
+  { id: "home", label: "Home", icon: Home, path: "/" },
+  { id: "explore", label: "Explore", icon: Compass, path: "/explore" },
+  { id: "notifications", label: "Ripples", icon: Bell, path: "/notifications" },
+  { id: "bookmarks", label: "Saved", icon: Bookmark, path: "/bookmarks" },
+  { id: "profile", label: "Profile", icon: User, path: "/profile" },
 ];
 
 export function Sidebar({
   activeTab,
-  onTabChange,
   onCompose,
   onShowOnboarding,
   currentUser,
 }) {
+  const navigate = useNavigate();
+
+  const handleNavClick = (item) => {
+    navigate(item.path);
+  };
+
   return (
     <aside
       className="flex flex-col h-screen sticky top-0 w-[72px] items-center py-4 gap-1.5 flex-shrink-0 z-50"
@@ -25,7 +31,7 @@ export function Sidebar({
     >
       {/* Grove logo - always routes to Home */}
       <button
-        onClick={() => onTabChange("home")}
+        onClick={() => handleNavClick(NAV_ITEMS[0])}
         title="Home"
         className="mb-3 w-10 h-10 rounded-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95"
         style={{
@@ -41,12 +47,12 @@ export function Sidebar({
            Active:    strokeWidth 2.8  (noticeably bolder)
         */}
       <div className="flex flex-col gap-0.5 flex-1 w-full items-center">
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
           const active = activeTab === id;
           return (
             <button
               key={id}
-              onClick={() => onTabChange(id)}
+              onClick={() => handleNavClick({ id, label, icon: Icon, path })}
               title={label}
               className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all group hover:bg-secondary active:scale-95"
               style={{
@@ -101,7 +107,7 @@ export function Sidebar({
 
       {/* User avatar - routes to Profile */}
       <button
-        onClick={() => onTabChange("profile")}
+        onClick={() => navigate("/profile")}
         title={`@${currentUser.handle} - View profile`}
         className="w-10 h-10 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95"
         style={{

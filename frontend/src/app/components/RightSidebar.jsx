@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Search, TrendingUp } from "lucide-react";
 
 const trends = [
@@ -30,6 +31,15 @@ const voices = [
 ];
 
 export function RightSidebar({ onTopicClick }) {
+  const navigate = useNavigate();
+
+  const handleTopicClick = (topic) => {
+    if (onTopicClick) {
+        onTopicClick(topic);
+    }
+    navigate("/explore");
+  };
+
   return (
     <aside className="w-[300px] pl-5 py-4 flex flex-col gap-5">
       {/* Search */}
@@ -78,7 +88,7 @@ export function RightSidebar({ onTopicClick }) {
         {trends.map((t, i) => (
           <div
             key={i}
-            onClick={() => onTopicClick && onTopicClick(t.topic)}
+            onClick={() => handleTopicClick(t.topic)}
             className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/60 rounded-xl mx-1"
           >
             <span className="text-lg">{t.emoji}</span>
@@ -99,86 +109,8 @@ export function RightSidebar({ onTopicClick }) {
           className="w-full px-4 py-3 text-[13px] text-left transition-colors hover:bg-secondary/60 rounded-b-3xl"
           style={{ color: "#6B8F5E", fontWeight: 600 }}
         >
-          See all topics
+          Show more
         </button>
-      </div>
-
-      {/* Suggested */}
-      <div
-        className="rounded-3xl overflow-hidden"
-        style={{
-          background: "#FDFAF4",
-          border: "1px solid rgba(42,42,37,0.08)",
-        }}
-      >
-        <div className="px-4 pt-4 pb-2">
-          <h2
-            className="text-foreground text-[15px]"
-            style={{ fontWeight: 800 }}
-          >
-            Voices to follow
-          </h2>
-        </div>
-        {voices.map((v, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-secondary/60 mx-1 rounded-xl"
-          >
-            <div className="flex items-center gap-2.5">
-              <img
-                src={v.avatar}
-                alt={v.name}
-                className="w-9 h-9 rounded-full object-cover"
-                style={{
-                  outline: "2px solid rgba(107,143,94,0.25)",
-                  outlineOffset: 1,
-                }}
-              />
-              <div>
-                <p
-                  className="text-foreground text-[14px]"
-                  style={{ fontWeight: 700 }}
-                >
-                  {v.name}
-                </p>
-                <p className="text-muted-foreground text-[12px]">@{v.handle}</p>
-              </div>
-            </div>
-            <button
-              className="rounded-xl px-3 py-1.5 text-[12px] transition-all hover:opacity-90"
-              style={{
-                background: "#6B8F5E",
-                color: "#FDFAF4",
-                fontWeight: 700,
-              }}
-            >
-              Follow
-            </button>
-          </div>
-        ))}
-        <button
-          className="w-full px-4 py-3 text-[13px] text-left hover:bg-secondary/60 rounded-b-3xl"
-          style={{ color: "#6B8F5E", fontWeight: 600 }}
-        >
-          Discover more
-        </button>
-      </div>
-
-      {/* Footer */}
-      <div className="flex flex-wrap gap-x-3 gap-y-1 px-1">
-        {["Terms", "Privacy", "About"].map((item) => (
-          <a
-            key={item}
-            href="#"
-            className="text-[12px] hover:text-foreground transition-colors"
-            style={{ color: "#B5B0A4" }}
-          >
-            {item}
-          </a>
-        ))}
-        <span className="text-[12px]" style={{ color: "#B5B0A4" }}>
-          © 2026 Grove
-        </span>
       </div>
     </aside>
   );
