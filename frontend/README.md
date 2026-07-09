@@ -1,17 +1,48 @@
+# Frontend — Social Microblog App
 
-  # Social media app
+This frontend is the React client for the `web-final` project. It connects to the backend API to handle authentication, feeds, profiles, search, likes, follows, and notifications.
 
-  This is a code bundle for Social media app. The original project is available at https://www.figma.com/design/P3Db5Pfi0xZr2lOUtcbO9o/Social-media-app.
+## Run the frontend
+1. Open a terminal tab and go to:
+   ```bash
+   cd /home/runner/work/web-final/web-final/frontend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the dev server:
+   ```bash
+   npm run dev
+   ```
 
-  ## Running the code
+Frontend default URL: `http://localhost:5173`
 
-  Run `npm i` to install the dependencies.
+## Important: run backend separately
+The frontend depends on the backend API, so also run:
+- `/home/runner/work/web-final/web-final/backend` in a **different terminal tab**
+- backend server (`npm run dev`) at the same time
 
-  Run `npm run dev` to start the development server.
+## Tech stack
+- React 18
+- Vite 6
+- React Router
+- Tailwind CSS v4
+- Radix/shadcn-style UI components
 
+## Frontend structure
+- `src/main.jsx` — app entrypoint
+- `src/app/App.jsx` — route definitions and providers
+- `src/app/context/UserContext.jsx` — authenticated user state
+- `src/app/services/api.js` — API client wrapper
+- `src/app/components/` — pages and reusable components
+- `src/styles/` — global and theme styling
 
-  how to pop up
-  - remove for not first time users
-
-  explore
-  - trending tags or topics
+## Frontend routes and page paths
+- `/login` → `src/app/components/LoginPage.jsx`
+- `/` → `src/app/components/pages/HomePage.jsx`
+- `/explore` → `src/app/components/pages/ExplorePage.jsx`
+- `/explore/hashtag` → `src/app/components/pages/ExplorePage.jsx` (hashtag view)
+- `/notifications` → `src/app/components/pages/NotificationsPage.jsx`
+- `/profile` → `src/app/components/ProfilePage.jsx` (current user profile)
+- `/profile/:username` → `src/app/components/ProfilePage.jsx` (public profile by username)
