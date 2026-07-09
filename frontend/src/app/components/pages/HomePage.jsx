@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { DeckFeed } from "../DeckFeed";
+import { useUser } from "../../context/UserContext";
 import { api } from "../../services/api";
 
 export function HomePage() {
+    const { user } = useUser();
     const [posts, setPosts] = useState([]);
     const [activeTab, setActiveTab] = useState("for-you");
 
@@ -15,6 +17,7 @@ export function HomePage() {
                 
                 const transformedPosts = feedPosts.map((post) => ({
                     id: String(post.id),
+                    userId: post.user_id,
                     user: {
                         name: post.display_name,
                         handle: post.username,
@@ -24,6 +27,7 @@ export function HomePage() {
                     timestamp: new Date(post.created_at).toLocaleDateString(),
                     likes: post.like_count || 0,
                     liked: false,
+                    isFollowing: post.is_following === 1,
                 }));
                 setPosts(transformedPosts);
             } catch (err) {
@@ -76,6 +80,30 @@ export function HomePage() {
         }
     };
 
+    const handleFollow = async (id) => {
+        try {
+            const post = posts.find((p) => p.id === id);
+            if (!post) return;
+            if (post.isFollowing) {
+                await api.users.unfollow(post.userId);
+                setPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === id ? { ...p, isFollowing: false } : p
+                    ),
+                );
+            } else {
+                await api.users.follow(post.userId);
+                setPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === id ? { ...p, isFollowing: true } : p
+                    ),
+                );
+            }
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
     return (
         <div
             className="flex flex-col h-full"
@@ -121,9 +149,11 @@ export function HomePage() {
             <DeckFeed
                 posts={posts}
                 onLike={handleLike}
+                onFollow={handleFollow}
                 onRepost={handleRepost}
                 onBookmark={handleBookmark}
                 onReply={() => {}}
+                currentUserHandle={user?.username}
             />
         </div>
     );

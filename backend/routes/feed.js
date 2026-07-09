@@ -27,7 +27,15 @@ router.get("/", auth, (req, res) => {
           SELECT COUNT(*)
           FROM likes
           WHERE likes.post_id = posts.id
-        ) AS like_count
+        ) AS like_count,
+
+        CASE
+          WHEN EXISTS (
+            SELECT 1 FROM follows
+            WHERE follower_id = ? AND following_id = users.id
+          ) THEN 1
+          ELSE 0
+        END AS is_following
 
       FROM posts
 
@@ -44,7 +52,7 @@ router.get("/", auth, (req, res) => {
         )
 
       ORDER BY posts.created_at DESC
-    `).all(req.user.id, req.user.id);
+    `).all(req.user.id, req.user.id, req.user.id);
 
     res.json(posts);
 
@@ -61,9 +69,10 @@ router.get("/", auth, (req, res) => {
  * Public feed
  * Anyone can view this.
  */
-router.get("/public", (req, res) => {
+router.get("/public", auth.optionalAuth, (req, res) => {
   try {
 
+    const currentUser = req.user;
     const posts = db.prepare(`
       SELECT
         posts.id,
@@ -71,6 +80,7 @@ router.get("/public", (req, res) => {
         posts.image_path,
         posts.created_at,
 
+        users.id AS user_id,
         users.username,
         users.display_name,
 
@@ -78,7 +88,15 @@ router.get("/public", (req, res) => {
           SELECT COUNT(*)
           FROM likes
           WHERE likes.post_id = posts.id
-        ) AS like_count
+        ) AS like_count,
+
+        CASE
+          WHEN ? IS NOT NULL AND EXISTS (
+            SELECT 1 FROM follows
+            WHERE follower_id = ? AND following_id = users.id
+          ) THEN 1
+          ELSE 0
+        END AS is_following
 
       FROM posts
 
@@ -86,7 +104,7 @@ router.get("/public", (req, res) => {
         ON users.id = posts.user_id
 
       ORDER BY posts.created_at DESC
-    `).all();
+    `).all(currentUser?.id, currentUser?.id);
 
     res.json(posts);
 

@@ -35,6 +35,7 @@ export function ProfilePage() {
           
           const transformedPosts = (data.posts || []).map((post) => ({
             id: String(post.id),
+            userId: post.user_id,
             user: {
               name: user.display_name,
               handle: user.username,
@@ -44,6 +45,7 @@ export function ProfilePage() {
             timestamp: new Date(post.created_at).toLocaleDateString(),
             likes: post.like_count || 0,
             liked: false,
+            isFollowing: post.is_following === 1,
           }));
           setPosts(transformedPosts);
         } catch (err) {
@@ -72,6 +74,30 @@ export function ProfilePage() {
 
   const handleBookmark = async (id) => {
     console.log("Bookmark:", id);
+  };
+
+  const handlePostFollow = async (id) => {
+    try {
+      const post = posts.find((p) => p.id === id);
+      if (!post) return;
+      if (post.isFollowing) {
+        await api.users.unfollow(post.userId);
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === id ? { ...p, isFollowing: false } : p
+          ),
+        );
+      } else {
+        await api.users.follow(post.userId);
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === id ? { ...p, isFollowing: true } : p
+          ),
+        );
+      }
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   const handleFollowToggle = async () => {
@@ -198,8 +224,10 @@ export function ProfilePage() {
         <DeckFeed
           posts={posts}
           onLike={handleLike}
+          onFollow={handlePostFollow}
           onRepost={handleRepost}
           onBookmark={handleBookmark}
+          currentUserHandle={user?.username}
         />
       )}
     </div>

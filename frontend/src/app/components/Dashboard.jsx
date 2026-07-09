@@ -30,14 +30,16 @@ export function Dashboard({ initialUser }) {
                 const transformedPosts = feedPosts.map((post) => ({
                     id: String(post.id),
                     user: {
-                        name: post.user.display_name,
-                        handle: post.user.username,
+                        id: post.user_id,
+                        name: post.display_name,
+                        handle: post.username,
                     },
                     content: post.content,
                     image: post.image_path,
                     timestamp: new Date(post.created_at).toLocaleDateString(),
                     likes: post.like_count || 0,
                     liked: false,
+                    isFollowing: post.is_following === 1,
                 }));
                 setPosts(transformedPosts);
             } catch (err) {
@@ -81,12 +83,29 @@ export function Dashboard({ initialUser }) {
         }
     };
 
-    const handleRepost = async (id) => {
-        alert("Repost feature not available");
-    };
+    const handleFollow = async (postId) => {
+        try {
+            const post = posts.find((p) => p.id === postId);
+            if (!post) return;
 
-    const handleBookmark = async (id) => {
-        alert("Bookmark feature not available");
+            if (post.isFollowing) {
+                await api.users.unfollow(post.user.id);
+                setPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === postId ? { ...p, isFollowing: false } : p,
+                    ),
+                );
+            } else {
+                await api.users.follow(post.user.id);
+                setPosts((prev) =>
+                    prev.map((p) =>
+                        p.id === postId ? { ...p, isFollowing: true } : p,
+                    ),
+                );
+            }
+        } catch (err) {
+            alert(err.message);
+        }
     };
 
     const handlePost = async (content) => {
@@ -96,14 +115,16 @@ export function Dashboard({ initialUser }) {
             const transformedPosts = feedPosts.map((post) => ({
                 id: String(post.id),
                 user: {
-                    name: post.user.display_name,
-                    handle: post.user.username,
+                    id: post.user_id,
+                    name: post.display_name,
+                    handle: post.username,
                 },
                 content: post.content,
                 image: post.image_path,
                 timestamp: new Date(post.created_at).toLocaleDateString(),
                 likes: post.like_count || 0,
                 liked: false,
+                isFollowing: post.is_following === 1,
             }));
             setPosts(transformedPosts);
         } catch (err) {
@@ -258,9 +279,8 @@ export function Dashboard({ initialUser }) {
                         <DeckFeed
                             posts={posts}
                             onLike={handleLike}
-                            onRepost={handleRepost}
-                            onBookmark={handleBookmark}
-                            onReply={(post) => setReplyPost(post)}
+                            onFollow={handleFollow}
+                            currentUserHandle={currentUser.username}
                         />
                     </div>
                 );
@@ -442,9 +462,8 @@ export function Dashboard({ initialUser }) {
                 <DeckFeed
                     posts={posts}
                     onLike={handleLike}
-                    onRepost={handleRepost}
-                    onBookmark={handleBookmark}
-                    onReply={(post) => setReplyPost(post)}
+                    onFollow={handleFollow}
+                    currentUserHandle={currentUser.username}
                 />
             </div>
         );

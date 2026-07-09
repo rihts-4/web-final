@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ThoughtCard } from "./ThoughtCard";
 
-export function DeckFeed({ posts, onLike, onRepost, onBookmark, onReply }) {
+export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
   const [topIndex, setTopIndex] = useState(0);
 
   const advance = () => setTopIndex((i) => Math.min(i + 1, posts.length - 1));
@@ -69,9 +69,8 @@ export function DeckFeed({ posts, onLike, onRepost, onBookmark, onReply }) {
                 onLike(id);
                 if (isTop) advance();
               }}
-              onRepost={onRepost}
-              onBookmark={onBookmark}
-              onReply={onReply}
+              onFollow={onFollow}
+              currentUserHandle={currentUserHandle}
               onSwipedAway={isTop ? advance : undefined}
               isTop={isTop}
               style={{

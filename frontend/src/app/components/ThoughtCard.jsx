@@ -1,14 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import {
     Heart,
-    Repeat2,
-    Bookmark,
-    MessageCircle,
+    UserPlus,
     Play,
     Pause,
     Volume2,
 } from "lucide-react";
-import { ReplyModal } from "./ReplyModal";
 
 function formatCount(n) {
     if (n >= 1_000_000)
@@ -112,12 +109,11 @@ function AudioPlayer({ label, duration }) {
 export function ThoughtCard({
     post,
     onLike,
-    onRepost,
-    onBookmark,
-    onReply,
+    onFollow,
     onSwipedAway,
     style,
     isTop,
+    currentUserHandle,
 }) {
     const cardRef = useRef(null);
     const origin = useRef(null);
@@ -125,7 +121,7 @@ export function ThoughtCard({
     const [dragX, setDragX] = useState(0);
     const [dragging, setDragging] = useState(false);
 
-    // "like" = dragging right | "repost" = dragging left | null = neutral
+    // "like" = dragging right | null = neutral
     const [gesture, setGesture] = useState(null);
 
     const THRESHOLD = 90;
@@ -133,6 +129,7 @@ export function ThoughtCard({
     const onPointerDown = useCallback(
         (e) => {
             if (!isTop) return;
+            if (e.target.closest("button") || e.target.closest("a")) return;
             origin.current = { x: e.clientX, y: e.clientY };
             moved.current = false;
             setDragging(true);
@@ -148,7 +145,7 @@ export function ThoughtCard({
             const dy = Math.abs(e.clientY - origin.current.y);
             if (Math.abs(dx) > 8 || dy > 8) moved.current = true;
             setDragX(dx);
-            setGesture(dx > 30 ? "like" : dx < -30 ? "repost" : null);
+            setGesture(dx > 30 ? "like" : null);
         },
         [isTop],
     );
@@ -159,22 +156,17 @@ export function ThoughtCard({
             if (dragX > THRESHOLD) {
                 onLike(post.id);
                 onSwipedAway?.();
-            } else if (dragX < -THRESHOLD) {
-                onRepost(post.id);
-                onSwipedAway?.();
             }
         }
         setDragX(0);
         setDragging(false);
         setGesture(null);
         origin.current = null;
-    }, [dragX, isTop, onLike, onRepost, onSwipedAway, post.id]);
+    }, [dragX, isTop, onLike, onSwipedAway, post.id]);
 
     const rotation = dragging ? dragX * 0.06 : 0;
     const washAlpha = Math.max(0, Math.abs(dragX) - 30) / 220;
     const likeAlpha = gesture === "like" ? Math.min(1, (dragX - 30) / 60) : 0;
-    const repostAlpha =
-        gesture === "repost" ? Math.min(1, (-dragX - 30) / 60) : 0;
 
     return (
         <div
@@ -182,6 +174,7 @@ export function ThoughtCard({
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
             className="absolute inset-0 rounded-3xl overflow-hidden select-none"
             style={{
                 ...style,
@@ -206,9 +199,7 @@ export function ThoughtCard({
                         background:
                             gesture === "like"
                                 ? `rgba(107,143,94,${washAlpha})`
-                                : gesture === "repost"
-                                  ? `rgba(59,130,246,${washAlpha})`
-                                  : "transparent",
+                                : "transparent",
                     }}
                 />
             )}
@@ -255,36 +246,6 @@ export function ThoughtCard({
                         </span>
                     </div>
 
-                    {/* Re-root badge — top-right */}
-                    <div
-                        style={{
-                            position: "absolute",
-                            top: 16,
-                            right: 12,
-                            opacity: repostAlpha,
-                            transform: `rotate(14deg) scale(${0.82 + repostAlpha * 0.18})`,
-                            transition: dragging ? "none" : "opacity 0.15s",
-                        }}
-                    >
-                        <span
-                            style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 6,
-                                padding: "7px 14px",
-                                borderRadius: 14,
-                                background: "#FDFAF4" /* fully opaque */,
-                                border: "2.5px solid #3B82F6",
-                                boxShadow: "0 4px 18px rgba(59,130,246,0.22)",
-                                fontFamily: "'Nunito', sans-serif",
-                                fontSize: 14,
-                                fontWeight: 800,
-                                color: "#3B82F6",
-                            }}
-                        >
-                            🔁 Re-root
-                        </span>
-                    </div>
                 </div>
             )}
 
@@ -386,20 +347,16 @@ export function ThoughtCard({
                         borderTop: "1px solid rgba(42,42,37,0.08)",
                     }}
                 >
-                    <ActionBtn
-                        // onClick={(e) => {
-                        //   e.stopPropagation();
-                        //   onReply(post);
-                        // }}
-                        onClick={() => {
-                            <ReplyModal post={post} />;
-                        }}
-                        icon={<MessageCircle size={19} strokeWidth={2.4} />}
-                        label={formatCount(post.replies)}
-                        activeColor={null}
-                        tooltip="Reply"
-                    />
-
+                {/* ── Action bar ─────────────────────────────────────
+              Like button + Follow button (if not self).
+           ──────────────────────────────────────────────────── */}
+                <div
+                    className="flex items-center justify-between mt-4"
+                    style={{
+                        paddingTop: 12,
+                        borderTop: "1px solid rgba(42,42,37,0.08)",
+                    }}
+                >
                     <ActionBtn
                         onClick={(e) => {
                             e.stopPropagation();
@@ -417,35 +374,18 @@ export function ThoughtCard({
                         tooltip="Like — or swipe right →"
                     />
 
-                    <ActionBtn
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onRepost(post.id);
-                        }}
-                        icon={<Repeat2 size={19} strokeWidth={2.4} />}
-                        label={formatCount(
-                            post.reposts + (post.reposted ? 1 : 0),
-                        )}
-                        activeColor={post.reposted ? "#3B82F6" : null}
-                        tooltip="Re-root — or swipe left ←"
-                    />
-
-                    <ActionBtn
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onBookmark(post.id);
-                        }}
-                        icon={
-                            <Bookmark
-                                size={19}
-                                strokeWidth={2.4}
-                                fill={post.bookmarked ? "currentColor" : "none"}
-                            />
-                        }
-                        label=""
-                        activeColor={post.bookmarked ? "#6B8F5E" : null}
-                        tooltip="Save"
-                    />
+                    {currentUserHandle !== post.user.handle && (
+                        <ActionBtn
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onFollow(post.id);
+                            }}
+                            icon={<UserPlus size={19} strokeWidth={2.4} />}
+                            label={post.isFollowing ? "Unfollow" : "Follow"}
+                            activeColor={post.isFollowing ? "#6B8F5E" : null}
+                            tooltip={post.isFollowing ? "Unfollow this user" : "Follow this user"}
+                        />
+                    )}
 
                     <span
                         className="text-[10px] whitespace-nowrap"
@@ -455,8 +395,9 @@ export function ThoughtCard({
                             fontFamily: "'Nunito', sans-serif",
                         }}
                     >
-                        ← swipe →
+                        swipe →
                     </span>
+                </div>
                 </div>
             </div>
         </div>
