@@ -1,5 +1,6 @@
 const express = require("express");
 const db = require("../db/database");
+const auth = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -82,14 +83,16 @@ router.get("/", (req, res) => {
  * Example:
  * GET /api/search/hashtag/test
  */
-router.get("/hashtag/:tag", (req, res) => {
+router.get("/hashtag/:tag", auth.optionalAuth, (req, res) => {
   try {
 
     const tag = req.params.tag.toLowerCase();
+    const currentUserId = req.user?.id;
 
     const posts = db.prepare(`
       SELECT
         posts.id,
+        posts.user_id,
         posts.content,
         posts.image_path,
         posts.created_at,
@@ -101,7 +104,18 @@ router.get("/hashtag/:tag", (req, res) => {
           SELECT COUNT(*)
           FROM likes
           WHERE likes.post_id = posts.id
-        ) AS like_count
+        ) AS like_count,
+
+        ${currentUserId ? `(
+          SELECT COUNT(*)
+          FROM likes
+          WHERE likes.post_id = posts.id AND likes.user_id = ?
+        ) AS liked,
+        (
+          SELECT COUNT(*)
+          FROM follows
+          WHERE follower_id = ? AND following_id = posts.user_id
+        ) AS is_following` : "0 AS liked, 0 AS is_following"}
 
       FROM posts
 
@@ -117,9 +131,14 @@ router.get("/hashtag/:tag", (req, res) => {
       WHERE hashtags.tag = ?
 
       ORDER BY posts.created_at DESC
-    `).all(tag);
+    `).all(...(currentUserId ? [currentUserId, currentUserId, tag] : [tag]));
 
-    res.json(posts);
+    const result = posts.map((p) => ({
+      ...p,
+      is_following: currentUserId ? Boolean(p.is_following) : false,
+    }));
+
+    res.json(result);
 
   } catch (err) {
     console.error(err);

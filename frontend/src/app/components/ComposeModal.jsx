@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
-import { X, Image, Smile, BarChart2, Volume2, PenLine } from "lucide-react";
+import { X, Image, PenLine } from "lucide-react";
 
 export function ComposeModal({ onClose, onPost, currentUser }) {
   const [content, setContent] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
   const maxChars = 400;
@@ -11,7 +13,7 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
 
   const handlePost = () => {
     if (!content.trim() || overLimit) return;
-    onPost(content.trim());
+    onPost(content.trim(), selectedImage);
     onClose();
   };
 
@@ -19,6 +21,11 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
     setContent(e.target.value);
     e.target.style.height = "auto";
     e.target.style.height = e.target.scrollHeight + "px";
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setSelectedImage(file);
   };
 
   return (
@@ -58,15 +65,17 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
 
         {/* Compose area */}
         <div className="flex gap-3 px-5 pb-4">
-          <img
-            src={currentUser.avatar}
-            alt={currentUser.name}
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0 mt-1"
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 font-bold"
             style={{
+              background: "#6B8F5E",
+              color: "#FDFAF4",
               outline: "2px solid rgba(107,143,94,0.3)",
               outlineOffset: 2,
             }}
-          />
+          >
+            {currentUser?.username?.charAt(0).toUpperCase() || "U"}
+          </div>
 
           <div className="flex-1">
             <textarea
@@ -84,6 +93,27 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
             />
           </div>
         </div>
+
+        {/* Image preview */}
+        {selectedImage && (
+          <div className="px-5 pb-3">
+            <div className="relative rounded-2xl overflow-hidden" style={{ maxHeight: 200 }}>
+              <img
+                src={URL.createObjectURL(selectedImage)}
+                alt=""
+                className="w-full object-cover"
+                style={{ maxHeight: 200 }}
+              />
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(0,0,0,0.6)", color: "#FDFAF4" }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tag suggestions */}
         <div className="flex gap-2 px-5 pb-4 flex-wrap">
@@ -109,14 +139,20 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
           style={{ borderTop: "1px solid rgba(42,42,37,0.08)" }}
         >
           <div className="flex items-center gap-1" style={{ color: "#6B8F5E" }}>
-            {[Image, Smile, Volume2, BarChart2].map((Icon, i) => (
-              <button
-                key={i}
-                className="p-2 rounded-xl transition-colors hover:bg-secondary"
-              >
-                <Icon size={17} />
-              </button>
-            ))}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 rounded-xl transition-colors hover:bg-secondary"
+              title="Attach image"
+            >
+              <Image size={17} />
+            </button>
           </div>
           <div className="flex items-center gap-3">
             {content.length > 0 && (

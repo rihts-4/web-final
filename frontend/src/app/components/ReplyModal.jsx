@@ -8,8 +8,6 @@ const MOCK_REPLIES = {
       user: {
         name: "Rowan Ashby",
         handle: "rowanashby",
-        avatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&auto=format",
       },
       content:
         "The sediment analogy is perfect. Some of my best ideas only surface after a long walk.",
@@ -21,8 +19,6 @@ const MOCK_REPLIES = {
       user: {
         name: "Zara Finch",
         handle: "zarafinch",
-        avatar:
-          "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&auto=format",
       },
       content:
         'Bookmarking this. "Intelligence that only comes through stillness" — putting this on my wall.',
@@ -36,8 +32,6 @@ const MOCK_REPLIES = {
       user: {
         name: "Felix Osei",
         handle: "felixosei",
-        avatar:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&auto=format",
       },
       content:
         "2.6 billion tons and we're still debating whether trees matter. Thank you for framing this so well.",
@@ -51,8 +45,6 @@ const MOCK_REPLIES = {
       user: {
         name: "Mila Voss",
         handle: "milavoss",
-        avatar:
-          "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=40&h=40&fit=crop&auto=format",
       },
       content: "This really resonated with me. Thanks for sharing.",
       timestamp: "2h ago",
@@ -134,15 +126,17 @@ export function ReplyModal({ post, currentUser, onClose }) {
           }}
         >
           <div className="flex gap-3 items-start">
-            <img
-              src={post.user.avatar}
-              alt={post.user.name}
-              className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs"
               style={{
+                background: "#6B8F5E",
+                color: "#FDFAF4",
                 outline: "2px solid rgba(107,143,94,0.25)",
                 outlineOffset: 1,
               }}
-            />
+            >
+              {post.user.handle?.charAt(0).toUpperCase() || "U"}
+            </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
@@ -193,15 +187,17 @@ export function ReplyModal({ post, currentUser, onClose }) {
                 }}
               >
                 <div className="flex gap-3 items-start">
-                  <img
-                    src={reply.user.avatar}
-                    alt={reply.user.name}
-                    className="w-9 h-9 rounded-full object-cover flex-shrink-0"
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs"
                     style={{
+                      background: "#6B8F5E",
+                      color: "#FDFAF4",
                       outline: "2px solid rgba(42,42,37,0.08)",
                       outlineOffset: 1,
                     }}
-                  />
+                  >
+                    {reply.user.handle?.charAt(0).toUpperCase() || "U"}
+                  </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
@@ -249,15 +245,17 @@ export function ReplyModal({ post, currentUser, onClose }) {
             </span>
           </p>
           <div className="flex gap-3">
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              className="w-9 h-9 rounded-full object-cover flex-shrink-0 mt-0.5"
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 font-bold text-xs"
               style={{
+                background: "#6B8F5E",
+                color: "#FDFAF4",
                 outline: "2px solid rgba(107,143,94,0.3)",
                 outlineOffset: 1,
               }}
-            />
+            >
+              {currentUser?.username?.charAt(0).toUpperCase() || "U"}
+            </div>
 
             <div className="flex-1">
               <textarea

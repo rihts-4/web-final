@@ -1,14 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import {
     Heart,
-    Repeat2,
-    Bookmark,
-    MessageCircle,
+    UserPlus,
     Play,
     Pause,
     Volume2,
 } from "lucide-react";
-import { ReplyModal } from "./ReplyModal";
 
 function formatCount(n) {
     if (n >= 1_000_000)
@@ -112,12 +109,11 @@ function AudioPlayer({ label, duration }) {
 export function ThoughtCard({
     post,
     onLike,
-    onRepost,
-    onBookmark,
-    onReply,
+    onFollow,
     onSwipedAway,
     style,
     isTop,
+    currentUserHandle,
 }) {
     const cardRef = useRef(null);
     const origin = useRef(null);
@@ -125,7 +121,7 @@ export function ThoughtCard({
     const [dragX, setDragX] = useState(0);
     const [dragging, setDragging] = useState(false);
 
-    // "like" = dragging right | "repost" = dragging left | null = neutral
+    // "like" = dragging right | "skip" = dragging left | null = neutral
     const [gesture, setGesture] = useState(null);
 
     const THRESHOLD = 90;
@@ -133,6 +129,7 @@ export function ThoughtCard({
     const onPointerDown = useCallback(
         (e) => {
             if (!isTop) return;
+            if (e.target.closest("button") || e.target.closest("a")) return;
             origin.current = { x: e.clientX, y: e.clientY };
             moved.current = false;
             setDragging(true);
@@ -148,7 +145,9 @@ export function ThoughtCard({
             const dy = Math.abs(e.clientY - origin.current.y);
             if (Math.abs(dx) > 8 || dy > 8) moved.current = true;
             setDragX(dx);
-            setGesture(dx > 30 ? "like" : dx < -30 ? "repost" : null);
+            if (dx > 30) setGesture("like");
+            else if (dx < -30) setGesture("skip");
+            else setGesture(null);
         },
         [isTop],
     );
@@ -158,9 +157,7 @@ export function ThoughtCard({
         if (moved.current) {
             if (dragX > THRESHOLD) {
                 onLike(post.id);
-                onSwipedAway?.();
             } else if (dragX < -THRESHOLD) {
-                onRepost(post.id);
                 onSwipedAway?.();
             }
         }
@@ -168,13 +165,11 @@ export function ThoughtCard({
         setDragging(false);
         setGesture(null);
         origin.current = null;
-    }, [dragX, isTop, onLike, onRepost, onSwipedAway, post.id]);
+    }, [dragX, isTop, onLike, onSwipedAway, post.id]);
 
     const rotation = dragging ? dragX * 0.06 : 0;
     const washAlpha = Math.max(0, Math.abs(dragX) - 30) / 220;
-    const likeAlpha = gesture === "like" ? Math.min(1, (dragX - 30) / 60) : 0;
-    const repostAlpha =
-        gesture === "repost" ? Math.min(1, (-dragX - 30) / 60) : 0;
+    const gestureAlpha = gesture ? Math.min(1, (Math.abs(dragX) - 30) / 60) : 0;
 
     return (
         <div
@@ -182,6 +177,7 @@ export function ThoughtCard({
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
             className="absolute inset-0 rounded-3xl overflow-hidden select-none"
             style={{
                 ...style,
@@ -198,7 +194,7 @@ export function ThoughtCard({
             }}
         >
             {/* ── Colour wash (z:1) ─────────────────────────── */}
-            {dragging && (
+            {dragging && gesture && (
                 <div
                     className="absolute inset-0 rounded-3xl pointer-events-none"
                     style={{
@@ -206,9 +202,7 @@ export function ThoughtCard({
                         background:
                             gesture === "like"
                                 ? `rgba(107,143,94,${washAlpha})`
-                                : gesture === "repost"
-                                  ? `rgba(59,130,246,${washAlpha})`
-                                  : "transparent",
+                                : `rgba(192,69,58,${washAlpha * 0.4})`,
                     }}
                 />
             )}
@@ -230,8 +224,8 @@ export function ThoughtCard({
                             position: "absolute",
                             top: 16,
                             left: 12,
-                            opacity: likeAlpha,
-                            transform: `rotate(-14deg) scale(${0.82 + likeAlpha * 0.18})`,
+                            opacity: gesture === "like" ? gestureAlpha : 0,
+                            transform: `rotate(-14deg) scale(${0.82 + gestureAlpha * 0.18})`,
                             transition: dragging ? "none" : "opacity 0.15s",
                         }}
                     >
@@ -242,7 +236,7 @@ export function ThoughtCard({
                                 gap: 6,
                                 padding: "7px 14px",
                                 borderRadius: 14,
-                                background: "#FDFAF4" /* fully opaque */,
+                                background: "#FDFAF4",
                                 border: "2.5px solid #6B8F5E",
                                 boxShadow: "0 4px 18px rgba(107,143,94,0.28)",
                                 fontFamily: "'Nunito', sans-serif",
@@ -255,14 +249,14 @@ export function ThoughtCard({
                         </span>
                     </div>
 
-                    {/* Re-root badge — top-right */}
+                    {/* Skip badge — top-right */}
                     <div
                         style={{
                             position: "absolute",
                             top: 16,
                             right: 12,
-                            opacity: repostAlpha,
-                            transform: `rotate(14deg) scale(${0.82 + repostAlpha * 0.18})`,
+                            opacity: gesture === "skip" ? gestureAlpha : 0,
+                            transform: `rotate(14deg) scale(${0.82 + gestureAlpha * 0.18})`,
                             transition: dragging ? "none" : "opacity 0.15s",
                         }}
                     >
@@ -273,16 +267,16 @@ export function ThoughtCard({
                                 gap: 6,
                                 padding: "7px 14px",
                                 borderRadius: 14,
-                                background: "#FDFAF4" /* fully opaque */,
-                                border: "2.5px solid #3B82F6",
-                                boxShadow: "0 4px 18px rgba(59,130,246,0.22)",
+                                background: "#FDFAF4",
+                                border: "2.5px solid #C0453A",
+                                boxShadow: "0 4px 18px rgba(192,69,58,0.28)",
                                 fontFamily: "'Nunito', sans-serif",
                                 fontSize: 14,
                                 fontWeight: 800,
-                                color: "#3B82F6",
+                                color: "#C0453A",
                             }}
                         >
-                            🔁 Re-root
+                            → Skip
                         </span>
                     </div>
                 </div>
@@ -304,10 +298,9 @@ export function ThoughtCard({
                 {/* User header */}
                 <div className="flex items-center gap-3 mb-4">
                     <UserAvatar
-                        avatar={post.user.avatar}
+                        handle={post.user.handle}
                         name={post.user.name}
                         size={44}
-                        verified={post.user.verified}
                     />
 
                     <div className="flex-1 min-w-0">
@@ -355,15 +348,12 @@ export function ThoughtCard({
 
                 {/* Image */}
                 {post.image && (
-                    <div
-                        className="rounded-2xl overflow-hidden mb-4"
-                        style={{ maxHeight: 200 }}
-                    >
+                    <div className="rounded-2xl overflow-hidden mb-4">
                         <img
                             src={post.image}
                             alt=""
-                            className="w-full object-cover"
-                            style={{ maxHeight: 200 }}
+                            className="w-full"
+                            style={{ maxHeight: 300, objectFit: "contain", background: "#EDE9DD" }}
                         />
                     </div>
                 )}
@@ -377,8 +367,7 @@ export function ThoughtCard({
                 )}
 
                 {/* ── Action bar ─────────────────────────────────────
-             Two swipe gestures: right → Like, left → Re-root.
-             Four tap buttons for non-swipe interactions.
+             Two swipe gestures: right → Like, left → Skip.
           ──────────────────────────────────────────────────── */}
                 <div
                     className="flex items-center justify-between mt-4"
@@ -387,20 +376,17 @@ export function ThoughtCard({
                         borderTop: "1px solid rgba(42,42,37,0.08)",
                     }}
                 >
-                    <ActionBtn
-                        // onClick={(e) => {
-                        //   e.stopPropagation();
-                        //   onReply(post);
-                        // }}
-                        onClick={() => {
-                            <ReplyModal post={post} />;
-                        }}
-                        icon={<MessageCircle size={19} strokeWidth={2.4} />}
-                        label={formatCount(post.replies)}
-                        activeColor={null}
-                        tooltip="Reply"
-                    />
-
+                {/* ── Action bar ─────────────────────────────────────
+              Like button + Follow button (if not self).
+           ──────────────────────────────────────────────────── */}
+            
+                <div
+                    className="flex items-center justify-between mt-4"
+                    style={{
+                        paddingTop: 12,
+                        borderTop: "1px solid rgba(42,42,37,0.08)",
+                    }}
+                >
                     <ActionBtn
                         onClick={(e) => {
                             e.stopPropagation();
@@ -413,40 +399,23 @@ export function ThoughtCard({
                                 fill={post.liked ? "currentColor" : "none"}
                             />
                         }
-                        label={formatCount(post.likes + (post.liked ? 1 : 0))}
+                        label={formatCount(post.likes)}
                         activeColor={post.liked ? "#C0453A" : null}
-                        tooltip="Like — or swipe right →"
+                        tooltip="Like — swipe right →"
                     />
 
-                    <ActionBtn
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onRepost(post.id);
-                        }}
-                        icon={<Repeat2 size={19} strokeWidth={2.4} />}
-                        label={formatCount(
-                            post.reposts + (post.reposted ? 1 : 0),
-                        )}
-                        activeColor={post.reposted ? "#3B82F6" : null}
-                        tooltip="Re-root — or swipe left ←"
-                    />
-
-                    <ActionBtn
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onBookmark(post.id);
-                        }}
-                        icon={
-                            <Bookmark
-                                size={19}
-                                strokeWidth={2.4}
-                                fill={post.bookmarked ? "currentColor" : "none"}
-                            />
-                        }
-                        label=""
-                        activeColor={post.bookmarked ? "#6B8F5E" : null}
-                        tooltip="Save"
-                    />
+                    {currentUserHandle !== post.user.handle && (
+                        <ActionBtn
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onFollow(post.id);
+                            }}
+                            icon={<UserPlus size={19} strokeWidth={2.4} />}
+                            label={post.isFollowing ? "Unfollow" : "Follow"}
+                            activeColor={post.isFollowing ? "#6B8F5E" : null}
+                            tooltip={post.isFollowing ? "Unfollow this user" : "Follow this user"}
+                        />
+                    )}
 
                     <span
                         className="text-[10px] whitespace-nowrap"
@@ -459,6 +428,7 @@ export function ThoughtCard({
                         ← swipe →
                     </span>
                 </div>
+                </div>
             </div>
         </div>
     );
@@ -466,56 +436,23 @@ export function ThoughtCard({
 
 /* ── UserAvatar ───────────────────────────────────────── */
 
-export function UserAvatar({ avatar, name, size = 40, verified, onClick }) {
-    const badge = Math.round(size * 0.38);
+export function UserAvatar({ handle, name, size = 40, onClick }) {
     return (
         <div
-            className="relative flex-shrink-0"
+            className="relative flex-shrink-0 rounded-full flex items-center justify-center font-bold"
             style={{
                 width: size,
                 height: size,
                 cursor: onClick ? "pointer" : "default",
+                background: "#6B8F5E",
+                color: "#FDFAF4",
+                fontSize: Math.round(size * 0.4),
+                outline: "2.5px solid rgba(107,143,94,0.25)",
+                outlineOffset: 2,
             }}
             onClick={onClick}
         >
-            <img
-                src={avatar}
-                alt={name}
-                className="rounded-full object-cover w-full h-full"
-                style={{
-                    outline: "2.5px solid rgba(107,143,94,0.25)",
-                    outlineOffset: 2,
-                }}
-            />
-
-            {verified && (
-                <div
-                    className="absolute rounded-full flex items-center justify-center"
-                    style={{
-                        width: badge,
-                        height: badge,
-                        bottom: -1,
-                        right: -1,
-                        background: "#6B8F5E",
-                        border: "2px solid #F4F0E6",
-                    }}
-                >
-                    <svg
-                        viewBox="0 0 10 10"
-                        width={badge * 0.58}
-                        height={badge * 0.58}
-                        fill="none"
-                    >
-                        <path
-                            d="M2 5l2 2 4-4"
-                            stroke="white"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </div>
-            )}
+            {handle?.charAt(0).toUpperCase() || "U"}
         </div>
     );
 }

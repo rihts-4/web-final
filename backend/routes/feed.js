@@ -27,7 +27,21 @@ router.get("/", auth, (req, res) => {
           SELECT COUNT(*)
           FROM likes
           WHERE likes.post_id = posts.id
-        ) AS like_count
+        ) AS like_count,
+
+        (
+          SELECT COUNT(*)
+          FROM likes
+          WHERE likes.post_id = posts.id AND likes.user_id = ?
+        ) AS liked,
+
+        CASE
+          WHEN EXISTS (
+            SELECT 1 FROM follows
+            WHERE follower_id = ? AND following_id = users.id
+          ) THEN 1
+          ELSE 0
+        END AS is_following
 
       FROM posts
 
@@ -44,7 +58,7 @@ router.get("/", auth, (req, res) => {
         )
 
       ORDER BY posts.created_at DESC
-    `).all(req.user.id, req.user.id);
+    `).all(req.user.id, req.user.id, req.user.id, req.user.id);
 
     res.json(posts);
 
@@ -61,9 +75,10 @@ router.get("/", auth, (req, res) => {
  * Public feed
  * Anyone can view this.
  */
-router.get("/public", (req, res) => {
+router.get("/public", auth.optionalAuth, (req, res) => {
   try {
 
+    const currentUser = req.user;
     const posts = db.prepare(`
       SELECT
         posts.id,
@@ -71,6 +86,7 @@ router.get("/public", (req, res) => {
         posts.image_path,
         posts.created_at,
 
+        users.id AS user_id,
         users.username,
         users.display_name,
 
@@ -78,7 +94,21 @@ router.get("/public", (req, res) => {
           SELECT COUNT(*)
           FROM likes
           WHERE likes.post_id = posts.id
-        ) AS like_count
+        ) AS like_count,
+
+        ${currentUser?.id ? `(
+          SELECT COUNT(*)
+          FROM likes
+          WHERE likes.post_id = posts.id AND likes.user_id = ?
+        ) AS liked` : "0 AS liked"},
+
+        CASE
+          WHEN ? IS NOT NULL AND EXISTS (
+            SELECT 1 FROM follows
+            WHERE follower_id = ? AND following_id = users.id
+          ) THEN 1
+          ELSE 0
+        END AS is_following
 
       FROM posts
 
@@ -86,7 +116,7 @@ router.get("/public", (req, res) => {
         ON users.id = posts.user_id
 
       ORDER BY posts.created_at DESC
-    `).all();
+    `).all(...(currentUser?.id ? [currentUser.id, currentUser.id, currentUser.id] : [null, null]));
 
     res.json(posts);
 
@@ -95,6 +125,42 @@ router.get("/public", (req, res) => {
 
     res.status(500).json({
       error: "Failed to retrieve public feed"
+    });
+  }
+});
+
+/**
+ * Trending data for the right sidebar
+ * Returns top 3 hashtags and top 3 users by post count
+ */
+router.get("/trending", (req, res) => {
+  try {
+
+    const hashtags = db.prepare(`
+      SELECT hashtags.tag, COUNT(*) AS count
+      FROM post_hashtags
+      JOIN hashtags ON hashtags.id = post_hashtags.hashtag_id
+      GROUP BY hashtags.tag
+      ORDER BY count DESC
+      LIMIT 3
+    `).all();
+
+    const users = db.prepare(`
+      SELECT users.id, users.username, users.display_name, COUNT(*) AS post_count
+      FROM posts
+      JOIN users ON users.id = posts.user_id
+      GROUP BY users.id
+      ORDER BY post_count DESC
+      LIMIT 3
+    `).all();
+
+    res.json({ hashtags, users });
+
+  } catch (err) {
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to retrieve trending data"
     });
   }
 });

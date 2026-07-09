@@ -1,18 +1,17 @@
-import { useNavigate } from "react-router-dom";
-import { Home, Compass, Bell, Bookmark, User, PenLine } from "lucide-react";
+import { Home, Compass, Bell, User, PenLine } from "lucide-react";
 
 const NAV_ITEMS = [
-  { id: "home", label: "Home", icon: Home, path: "/" },
-  { id: "explore", label: "Explore", icon: Compass, path: "/explore" },
-  { id: "notifications", label: "Ripples", icon: Bell, path: "/notifications" },
-  { id: "bookmarks", label: "Saved", icon: Bookmark, path: "/bookmarks" },
-  { id: "profile", label: "Profile", icon: User, path: "/profile" },
+  { id: "home", label: "Home", icon: Home },
+  { id: "explore", label: "Explore", icon: Compass },
+  { id: "notifications", label: "Ripples", icon: Bell },
+  { id: "profile", label: "Profile", icon: User },
 ];
 
 export function Sidebar({
   activeTab,
   onCompose,
   onShowOnboarding,
+  onLogout,
   currentUser,
 }) {
   const navigate = useNavigate();
@@ -105,21 +104,21 @@ export function Sidebar({
         <PenLine size={20} strokeWidth={2.4} />
       </button>
 
-      {/* User avatar - routes to Profile */}
+      {/* User profile - routes to Profile */}
       <button
-        onClick={() => navigate("/profile")}
-        title={`@${currentUser.handle} - View profile`}
-        className="w-10 h-10 rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95"
+        onClick={() => onTabChange("profile")}
+        title={currentUser ? `@${currentUser.username} - View profile` : "View profile"}
+        className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95"
         style={{
+          background: "#6B8F5E",
+          color: "#FDFAF4",
           outline: "2px solid rgba(107,143,94,0.4)",
           outlineOffset: 2,
+          fontWeight: 800,
+          fontSize: "14px",
         }}
       >
-        <img
-          src={currentUser.avatar}
-          alt={currentUser.name}
-          className="w-full h-full object-cover"
-        />
+        {currentUser?.username?.charAt(0).toUpperCase() || "U"}
       </button>
 
       {/* Help button - reopens onboarding */}
@@ -134,6 +133,21 @@ export function Sidebar({
       >
         <span className="text-[12px]" style={{ fontWeight: 800 }}>
           ?
+        </span>
+      </button>
+
+      {/* Logout button */}
+      <button
+        onClick={onLogout}
+        title="Sign out"
+        className="w-7 h-7 rounded-full flex items-center justify-center transition-all hover:bg-red-100 active:scale-95"
+        style={{
+          border: "1.5px solid rgba(42,42,37,0.15)",
+          color: "#B5B0A4",
+        }}
+      >
+        <span className="text-[12px]" style={{ fontWeight: 800 }}>
+          ⌽
         </span>
       </button>
     </aside>

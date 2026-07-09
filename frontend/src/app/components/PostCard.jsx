@@ -1,9 +1,7 @@
 import { useState } from "react";
 import {
-  MessageCircle,
-  Repeat2,
+  UserPlus,
   Share,
-  Bookmark,
   MoreHorizontal,
   Zap,
 } from "lucide-react";
@@ -15,7 +13,7 @@ function formatCount(n) {
   return String(n);
 }
 
-export function PostCard({ post, onLike, onRepost, onBookmark, onReply }) {
+export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
   const [showMenu, setShowMenu] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -38,29 +36,15 @@ export function PostCard({ post, onLike, onRepost, onBookmark, onReply }) {
       />
 
       <div className="relative flex-shrink-0">
-        <img
-          src={post.user.avatar}
-          alt={post.user.name}
-          className="w-10 h-10 rounded-full object-cover ring-2 ring-border"
-        />
-
-        {post.user.verified && (
-          <div
-            className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-primary flex items-center justify-center"
-            style={{ width: 18, height: 18 }}
-          >
-            <svg viewBox="0 0 12 12" width={10} height={10} fill="white">
-              <path
-                d="M10 3L4.5 8.5 2 6"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              />
-            </svg>
-          </div>
-        )}
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center ring-2 ring-border text-sm font-bold"
+          style={{
+            background: "#6B8F5E",
+            color: "#FDFAF4",
+          }}
+        >
+          {post.user.handle?.charAt(0).toUpperCase() || "U"}
+        </div>
       </div>
 
       <div className="flex-1 min-w-0">
@@ -108,83 +92,64 @@ export function PostCard({ post, onLike, onRepost, onBookmark, onReply }) {
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center gap-1 -ml-1.5">
-          {/* Reply */}
-          <ActionBtn
-            onClick={(e) => {
-              e.stopPropagation();
-              onReply?.(post);
-            }}
-            icon={<MessageCircle size={17} />}
-            count={post.replies}
-            hoverColor="primary"
-          />
+         {/* Actions */}
+         <div className="flex items-center gap-1 -ml-1.5">
+           {/* Resonate (like) */}
+           <ActionBtn
+             onClick={(e) => {
+               e.stopPropagation();
+               onLike(post.id);
+             }}
+             icon={<Zap size={17} fill={post.liked ? "currentColor" : "none"} />}
+             count={post.likes + (post.liked ? 1 : 0)}
+             active={post.liked}
+             activeColor="text-amber-400"
+             hoverColor="amber"
+           />
 
-          {/* Amplify (repost) */}
-          <ActionBtn
-            onClick={(e) => {
-              e.stopPropagation();
-              onRepost(post.id);
-            }}
-            icon={<Repeat2 size={17} />}
-            count={post.reposts + (post.reposted ? 1 : 0)}
-            active={post.reposted}
-            activeColor="text-emerald-400"
-            hoverColor="emerald"
-          />
+           {/* Views */}
+           <ActionBtn
+             onClick={(e) => e.stopPropagation()}
+             icon={
+               <svg
+                 viewBox="0 0 24 24"
+                 width={17}
+                 height={17}
+                 fill="currentColor"
+               >
+                 <path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z" />
+               </svg>
+             }
+             count={post.views}
+             hoverColor="primary"
+           />
 
-          {/* Resonate (like) */}
-          <ActionBtn
-            onClick={(e) => {
-              e.stopPropagation();
-              onLike(post.id);
-            }}
-            icon={<Zap size={17} fill={post.liked ? "currentColor" : "none"} />}
-            count={post.likes + (post.liked ? 1 : 0)}
-            active={post.liked}
-            activeColor="text-amber-400"
-            hoverColor="amber"
-          />
+           {currentUserHandle !== post.user.handle && (
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 onFollow(post.id);
+               }}
+               className={`p-1.5 rounded-lg transition-colors ${
+                 post.isFollowing
+                   ? "text-primary bg-primary/10"
+                   : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+               }`}
+               title={post.isFollowing ? "Unfollow this user" : "Follow this user"}
+             >
+               <UserPlus size={17} />
+             </button>
+           )}
 
-          {/* Views */}
-          <ActionBtn
-            onClick={(e) => e.stopPropagation()}
-            icon={
-              <svg
-                viewBox="0 0 24 24"
-                width={17}
-                height={17}
-                fill="currentColor"
-              >
-                <path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z" />
-              </svg>
-            }
-            count={post.views}
-            hoverColor="primary"
-          />
-
-          <div className="flex items-center ml-auto gap-0.5">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onBookmark(post.id);
-              }}
-              className={`p-1.5 rounded-lg transition-colors ${post.bookmarked ? "text-primary" : "text-muted-foreground hover:text-primary hover:bg-primary/10"}`}
-            >
-              <Bookmark
-                size={17}
-                fill={post.bookmarked ? "currentColor" : "none"}
-              />
-            </button>
-            <button
-              onClick={(e) => e.stopPropagation()}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-            >
-              <Share size={17} />
-            </button>
-          </div>
-        </div>
+           <div className="flex items-center ml-auto gap-0.5">
+             <button
+               onClick={(e) => e.stopPropagation()}
+               className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+             >
+               <Share size={17} />
+             </button>
+           </div>
+         </div>
       </div>
     </article>
   );
