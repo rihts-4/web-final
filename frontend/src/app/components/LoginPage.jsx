@@ -31,7 +31,7 @@ export function LoginPage() {
                     display_name: display,
                     password,
                 });
-                navigate("/login");
+                window.location.href = "/login";
             } else if (!isSignUp && isLoginValid) {
                 const response = await api.auth.login({ username, password });
                 localStorage.setItem("auth_token", response.token);
