@@ -5,7 +5,7 @@ This frontend is the React client for the `web-final` project. It connects to th
 ## Run the frontend
 1. Open a terminal tab and go to:
    ```bash
-   cd /home/runner/work/web-final/web-final/frontend
+   cd frontend
    ```
 2. Install dependencies:
    ```bash
