@@ -41,13 +41,20 @@ http://localhost:3000
 
 ## Environment Variables
 
-Create a `.env` file with:
+Copy the template and adjust as needed:
 
-```env
-PORT=3000
-JWT_SECRET=my_secret_key
-FRONTEND_ORIGIN=http://localhost:5173
+```bash
+cp .env.example .env
 ```
+
+Available variables:
+
+| Variable         | Default                  | Description                          |
+|------------------|--------------------------|--------------------------------------|
+| `PORT`           | `3000`                   | Server port                          |
+| `JWT_SECRET`     | `dev_secret`             | Secret key for JWT tokens            |
+| `FRONTEND_ORIGIN`| `http://localhost:5173`  | Allowed CORS origin                  |
+| `DB_PATH`        | `database.db`            | SQLite database file path            |
 
 ---
 
