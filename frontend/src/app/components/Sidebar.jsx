@@ -9,15 +9,14 @@ const NAV_ITEMS = [
 
 export function Sidebar({
   activeTab,
+  onTabChange,
   onCompose,
   onShowOnboarding,
   onLogout,
   currentUser,
 }) {
-  const navigate = useNavigate();
-
   const handleNavClick = (item) => {
-    navigate(item.path);
+    onTabChange?.(item.id);
   };
 
   return (
@@ -46,12 +45,12 @@ export function Sidebar({
            Active:    strokeWidth 2.8  (noticeably bolder)
         */}
       <div className="flex flex-col gap-0.5 flex-1 w-full items-center">
-        {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => {
           const active = activeTab === id;
           return (
             <button
               key={id}
-              onClick={() => handleNavClick({ id, label, icon: Icon, path })}
+              onClick={() => handleNavClick({ id })}
               title={label}
               className="relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all group hover:bg-secondary active:scale-95"
               style={{
