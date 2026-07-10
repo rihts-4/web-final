@@ -46,3 +46,9 @@ The frontend depends on the backend API, so also run:
 - `/notifications` → `src/app/components/pages/NotificationsPage.jsx`
 - `/profile` → `src/app/components/ProfilePage.jsx` (current user profile)
 - `/profile/:username` → `src/app/components/ProfilePage.jsx` (public profile by username)
+
+### Frontend Development
+UI Design: Nicholas
+Developer: Muhammad Faiq Haikal Bin M Haikal
+
+PR Review and README writer: Copilot agent
