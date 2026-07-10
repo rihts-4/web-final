@@ -24,7 +24,7 @@ By default, the backend runs on `http://localhost:3000`.
 ## How to run the frontend
 1. Open a **different terminal tab** and go to:
    ```bash
-   cd /home/runner/work/web-final/web-final/frontend
+   cd frontend
    ```
 2. Install dependencies:
    ```bash
