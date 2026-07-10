@@ -51,27 +51,20 @@ export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
     <article
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="flex gap-3 px-4 py-4 border-b border-border cursor-pointer relative transition-colors"
-      style={{
-        backgroundColor: hovered ? "rgba(139,92,246,0.04)" : "transparent",
-      }}
+      className={`flex gap-3 px-4 py-4 border-b border-border cursor-pointer relative transition-colors ${
+        hovered ? "bg-[rgba(139,92,246,0.04)]" : "bg-transparent"
+      }`}
     >
       {/* Subtle left accent on hover */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-0.5 rounded-r transition-opacity duration-200"
-        style={{
-          background: "linear-gradient(180deg, #8B5CF6, #6366F1)",
-          opacity: hovered ? 1 : 0,
-        }}
+        className={`absolute left-0 top-0 bottom-0 w-0.5 rounded-r transition-opacity duration-200 bg-gradient-to-b from-[#8B5CF6] to-[#6366F1] ${
+          hovered ? "opacity-100" : "opacity-0"
+        }`}
       />
 
       <div className="relative flex-shrink-0">
         <div
-          className="w-10 h-10 rounded-full flex items-center justify-center ring-2 ring-border text-sm font-bold"
-          style={{
-            background: "#6B8F5E",
-            color: "#FDFAF4",
-          }}
+          className="w-10 h-10 rounded-full flex items-center justify-center ring-2 ring-border text-sm font-bold bg-primary text-card"
         >
           {post.user.handle?.charAt(0).toUpperCase() || "U"}
         </div>
@@ -82,16 +75,15 @@ export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
         <div className="flex items-center justify-between gap-2 mb-1">
           <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
             <span
-              className="text-foreground text-[15px] truncate"
-              style={{ fontWeight: 700 }}
+              className="text-foreground text-sm md:text-[15px] truncate font-bold"
             >
               {post.user.name}
             </span>
-            <span className="text-muted-foreground text-[14px] truncate">
+            <span className="text-muted-foreground text-xs md:text-[14px] truncate">
               @{post.user.handle}
             </span>
-            <span className="text-muted-foreground text-[14px]">·</span>
-            <span className="text-muted-foreground text-[14px] flex-shrink-0">
+            <span className="text-muted-foreground text-xs md:text-[14px]">·</span>
+            <span className="text-muted-foreground text-xs md:text-[14px] flex-shrink-0">
               {post.timestamp}
             </span>
           </div>
@@ -107,7 +99,7 @@ export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
         </div>
 
         {/* Content */}
-        <p className="text-foreground text-[15px] leading-relaxed mb-3 whitespace-pre-wrap break-words">
+        <p className="text-foreground text-sm md:text-[15px] leading-relaxed mb-3 whitespace-pre-wrap break-words">
           {post.content}
         </p>
 
@@ -156,7 +148,7 @@ export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
               <button
                 onClick={handleFollowAction}
                 disabled={!!actionLoading}
-                className={`p-1.5 rounded-lg transition-colors ${
+                className={`min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg transition-colors ${
                   actionLoading === "follow"
                     ? "opacity-40 cursor-not-allowed"
                     : post.isFollowing
@@ -172,17 +164,17 @@ export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
             <div className="flex items-center ml-auto gap-0.5">
               <button
                 onClick={(e) => e.stopPropagation()}
-                className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               >
                 <Share size={17} />
               </button>
             </div>
          </div>
-         {actionError && (
-           <p className="text-[12px] mt-1 px-1" style={{ color: "#C0453A", fontWeight: 600 }}>
-             {actionError}
-           </p>
-         )}
+          {actionError && (
+            <p className="text-xs mt-1 px-1 text-destructive font-semibold">
+              {actionError}
+            </p>
+          )}
       </div>
     </article>
   );
@@ -199,12 +191,12 @@ function ActionBtn({ onClick, icon, count, active, activeColor, hoverColor, disa
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+      className={`flex items-center gap-1.5 min-h-[44px] min-w-[44px] px-3 md:px-2 py-2 md:py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
         active ? activeColor : `text-muted-foreground ${hoverClasses}`
       }`}
     >
       {icon}
-      {count > 0 && <span className="text-[13px]">{formatCount(count)}</span>}
+      {count > 0 && <span className="text-xs md:text-[13px]">{formatCount(count)}</span>}
     </button>
   );
 }

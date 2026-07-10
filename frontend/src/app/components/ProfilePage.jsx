@@ -141,61 +141,44 @@ export function ProfilePage() {
   };
 
   return (
-    <div
-      className="flex flex-col h-full overflow-y-auto"
-      style={{ fontFamily: "'Nunito', sans-serif" }}
-    >
+    <div className="flex flex-col h-full overflow-y-auto font-['Nunito',sans-serif]">
       {!isOwnProfile && (
-        <div
-          className="px-5 py-3 flex-shrink-0"
-          style={{
-            borderBottom: "1px solid rgba(42,42,37,0.08)",
-          }}
-        >
+        <div className="px-5 py-3 flex-shrink-0 border-b border-border/60">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-[14px]"
-            style={{ color: "#6B8F5E", fontWeight: 700 }}
+            className="flex items-center gap-1.5 text-sm text-primary font-bold"
           >
             ← Back
           </button>
         </div>
       )}
 
-      <div
-        className="px-5 pt-4 pb-4 flex-shrink-0"
-        style={{
-          borderBottom: "1px solid rgba(42,42,37,0.08)",
-        }}
-      >
+      <div className="px-5 pt-4 pb-4 flex-shrink-0 border-b border-border/60">
         <div className="flex items-start gap-4 justify-between">
           <div className="flex items-start gap-4">
             <UserAvatar handle={profile.user.username} name={profile.user.display_name} size={64} />
 
             <div className="flex-1 min-w-0">
-              <h1
-                className="text-foreground text-[20px] mb-0.5"
-                style={{ fontWeight: 800 }}
-              >
+              <h1 className="text-foreground text-xl mb-0.5 font-extrabold">
                 {profile.user.display_name}
               </h1>
-              <p className="text-muted-foreground text-[14px] mb-3">
+              <p className="text-muted-foreground text-sm mb-3">
                 @{profile.user.username}
               </p>
 
-              <p className="text-foreground text-[14px] leading-relaxed mb-3">
+              <p className="text-foreground text-sm leading-relaxed mb-3">
                 Thoughts matter. Ideas grow in good soil.
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
-                  <span style={{ fontWeight: 700, color: "#2A2A25" }}>
+                  <span className="font-bold text-foreground">
                     {profile.followers || 0}
                   </span>
                   <span>Followers</span>
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
-                  <span style={{ fontWeight: 700, color: "#2A2A25" }}>
+                  <span className="font-bold text-foreground">
                     {profile.following || 0}
                   </span>
                   <span>Following</span>
@@ -213,11 +196,10 @@ export function ProfilePage() {
               <button
                 onClick={handleFollowToggle}
                 disabled={isLoading}
-                className="px-6 py-2 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
+                className="px-6 py-2 rounded-xl text-sm transition-all hover:opacity-90 active:scale-95 flex-shrink-0 font-bold"
                 style={{
                   background: isFollowing ? "rgba(107,143,94,0.12)" : "#6B8F5E",
                   color: isFollowing ? "#6B8F5E" : "#FDFAF4",
-                  fontWeight: 700,
                   border: isFollowing ? "1.5px solid #6B8F5E" : "none",
                   opacity: isLoading ? 0.6 : 1,
                 }}
@@ -225,7 +207,7 @@ export function ProfilePage() {
                 {isLoading ? "Loading..." : isFollowing ? "Following" : "Follow"}
               </button>
               {followError && (
-                <p className="text-[12px] text-right" style={{ color: "#C0453A", fontWeight: 600 }}>
+                <p className="text-xs text-right text-destructive font-semibold">
                   {followError}
                 </p>
               )}
@@ -234,16 +216,8 @@ export function ProfilePage() {
         </div>
       </div>
 
-      <div
-        className="px-5 py-3 flex-shrink-0"
-        style={{
-          borderBottom: "1px solid rgba(42,42,37,0.08)",
-        }}
-      >
-        <h2
-          className="text-foreground text-[15px]"
-          style={{ fontWeight: 700 }}
-        >
+      <div className="px-5 py-3 flex-shrink-0 border-b border-border/60">
+        <h2 className="text-foreground text-[15px] font-bold">
           {isOwnProfile ? "Your Thoughts" : "Thoughts"}
         </h2>
       </div>
@@ -251,13 +225,10 @@ export function ProfilePage() {
       {posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 text-center px-8">
           <span className="text-5xl mb-4">🌱</span>
-          <h2
-            className="text-foreground text-[18px] mb-2"
-            style={{ fontWeight: 800 }}
-          >
+          <h2 className="text-foreground text-lg mb-2 font-extrabold">
             No thoughts yet
           </h2>
-          <p className="text-muted-foreground text-[14px] leading-relaxed">
+          <p className="text-muted-foreground text-sm leading-relaxed">
             {isOwnProfile
               ? "Start sharing your thoughts to grow your garden."
               : "This user hasn't shared any thoughts yet."}

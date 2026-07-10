@@ -98,49 +98,36 @@ export function HomePage() {
     };
 
     return (
-        <div
-            className="flex flex-col h-full"
-            style={{ fontFamily: "'Nunito', sans-serif" }}
-        >
-            <div
-                className="px-5 py-3.5 flex items-center justify-between flex-shrink-0"
-                style={{
-                    borderBottom: "1px solid rgba(42,42,37,0.08)",
-                }}
-            >
-                <h1
-                    className="text-foreground text-[18px]"
-                    style={{ fontWeight: 800 }}
-                >
+        <div className="flex flex-col h-full font-['Nunito',sans-serif]">
+            <div className="px-5 py-3.5 flex items-center justify-between flex-shrink-0 border-b border-border/60">
+                <h1 className="text-foreground text-lg font-extrabold">
                     Your Garden
                 </h1>
                 <div className="flex items-center gap-1.5">
                     <button
                         onClick={() => setActiveTab("for-you")}
-                        className="px-3 py-1 rounded-full text-[12px] transition-all"
-                        style={{
-                            background: activeTab === "for-you" ? "rgba(107,143,94,0.12)" : "transparent",
-                            color: activeTab === "for-you" ? "#6B8F5E" : "#B5B0A4",
-                            fontWeight: activeTab === "for-you" ? 700 : 500,
-                        }}
+                        className={`px-3 py-1 rounded-full text-xs transition-all ${
+                            activeTab === "for-you"
+                                ? "bg-primary/12 text-primary font-bold"
+                                : "bg-transparent text-switch-background font-medium"
+                        }`}
                     >
                         For you
                     </button>
                     <button
                         onClick={() => setActiveTab("following")}
-                        className="px-3 py-1 rounded-full text-[12px] transition-all hover:bg-secondary"
-                        style={{
-                            background: activeTab === "following" ? "rgba(107,143,94,0.12)" : "transparent",
-                            color: activeTab === "following" ? "#6B8F5E" : "#B5B0A4",
-                            fontWeight: activeTab === "following" ? 700 : 500,
-                        }}
+                        className={`px-3 py-1 rounded-full text-xs transition-all hover:bg-secondary ${
+                            activeTab === "following"
+                                ? "bg-primary/12 text-primary font-bold"
+                                : "bg-transparent text-switch-background font-medium"
+                        }`}
                     >
                         Following
                     </button>
                 </div>
             </div>
             {postError && (
-                <p className="px-5 py-2 text-[13px]" style={{ color: "#C0453A", fontWeight: 600 }}>
+                <p className="px-5 py-2 text-xs text-destructive font-semibold">
                     {postError}
                 </p>
             )}

@@ -121,16 +121,8 @@ export function ExplorePage() {
 
     if (selectedTag) {
         return (
-            <div
-                className="flex flex-col h-full"
-                style={{ fontFamily: "'Nunito', sans-serif" }}
-            >
-                <div
-                    className="px-5 py-4 flex items-center gap-3 flex-shrink-0"
-                    style={{
-                        borderBottom: "1px solid rgba(42,42,37,0.08)",
-                    }}
-                >
+            <div className="flex flex-col h-full">
+                <div className="px-5 py-4 flex items-center gap-3 flex-shrink-0 border-b border-border/60">
                     <button
                         onClick={() => navigate("/explore")}
                         className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary transition-colors"
@@ -138,10 +130,7 @@ export function ExplorePage() {
                         ←
                     </button>
                     <div>
-                        <h1
-                            className="text-foreground text-[18px]"
-                            style={{ fontWeight: 800 }}
-                        >
+                        <h1 className="text-foreground text-[18px] font-extrabold">
                             #{selectedTag}
                         </h1>
                         <p className="text-muted-foreground text-[12px]">
@@ -150,7 +139,7 @@ export function ExplorePage() {
                     </div>
                 </div>
                 {postError && (
-                    <p className="px-5 py-2 text-[13px]" style={{ color: "#C0453A", fontWeight: 600 }}>
+                    <p className="px-5 py-2 text-[13px] text-destructive font-semibold">
                         {postError}
                     </p>
                 )}
@@ -173,22 +162,11 @@ export function ExplorePage() {
     }
 
     return (
-        <div
-            className="flex flex-col h-full overflow-y-auto"
-            style={{ fontFamily: "'Nunito', sans-serif" }}
-        >
-            <div
-                className="px-5 py-4 flex-shrink-0"
-                style={{
-                    borderBottom: "1px solid rgba(42,42,37,0.08)",
-                }}
-            >
+        <div className="flex flex-col h-full overflow-y-auto">
+            <div className="px-5 py-4 flex-shrink-0 border-b border-border/60">
                 <div className="flex items-center gap-2 mb-4">
-                    <Compass size={18} style={{ color: "#6B8F5E" }} />
-                    <h1
-                        className="text-foreground text-[18px]"
-                        style={{ fontWeight: 800 }}
-                    >
+                    <Compass size={18} className="text-primary" />
+                    <h1 className="text-foreground text-[18px] font-extrabold">
                         Explore
                     </h1>
                 </div>
@@ -204,20 +182,7 @@ export function ExplorePage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="w-full rounded-2xl pl-10 pr-4 py-2.5 text-[14px] outline-none"
-                        style={{
-                            background: "#EAE5D8",
-                            color: "#2A2A25",
-                            border: "1.5px solid transparent",
-                        }}
-                        onFocus={(e) => {
-                            e.target.style.borderColor = "#6B8F5E";
-                            e.target.style.background = "#FDFAF4";
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.borderColor = "transparent";
-                            e.target.style.background = "#EAE5D8";
-                        }}
+                        className="w-full rounded-2xl pl-10 pr-4 py-2.5 text-[14px] outline-none bg-switch-background text-foreground border-[1.5px] border-transparent focus:border-primary focus:bg-card transition-all"
                     />
                 </div>
             </div>
@@ -225,10 +190,7 @@ export function ExplorePage() {
             <div className="px-5 py-5 flex flex-col gap-6">
                 {searchResults && (
                     <div>
-                        <h2
-                            className="text-[13px] uppercase tracking-wider mb-3"
-                            style={{ color: "#7D7D72", fontWeight: 700 }}
-                        >
+                        <h2 className="text-[13px] uppercase tracking-wider mb-3 text-muted-foreground font-bold">
                             Search Results
                         </h2>
                         
@@ -238,8 +200,7 @@ export function ExplorePage() {
                                 {searchResults.posts.map((post) => (
                                     <div
                                         key={post.id}
-                                        className="p-3 rounded-xl mb-2 cursor-pointer transition-colors hover:bg-secondary/40"
-                                        style={{ background: "#FDFAF4", border: "1px solid rgba(42,42,37,0.08)" }}
+                                        className="p-3 rounded-xl mb-2 cursor-pointer transition-colors hover:bg-secondary/40 bg-card border border-border/60"
                                     >
                                         <p className="text-foreground text-[13px] line-clamp-2">{post.content}</p>
                                         <p className="text-muted-foreground text-[11px] mt-1">by @{post.username}</p>
@@ -255,8 +216,7 @@ export function ExplorePage() {
                                     <div
                                         key={u.id}
                                         onClick={() => navigate(`/profile/${u.username}`)}
-                                        className="p-3 rounded-xl mb-2 cursor-pointer transition-colors hover:bg-secondary/40"
-                                        style={{ background: "#FDFAF4", border: "1px solid rgba(42,42,37,0.08)" }}
+                                        className="p-3 rounded-xl mb-2 cursor-pointer transition-colors hover:bg-secondary/40 bg-card border border-border/60"
                                     >
                                         <p className="text-foreground text-[13px] font-bold">{u.display_name}</p>
                                         <p className="text-muted-foreground text-[11px]">@{u.username}</p>
@@ -274,10 +234,7 @@ export function ExplorePage() {
 
                 {!searchResults && topics.length > 0 && (
                 <div>
-                    <h2
-                        className="text-[13px] uppercase tracking-wider mb-3"
-                        style={{ color: "#7D7D72", fontWeight: 700 }}
-                    >
+                    <h2 className="text-[13px] uppercase tracking-wider mb-3 text-muted-foreground font-bold">
                         Topics
                     </h2>
                     <div className="grid grid-cols-2 gap-2.5">
@@ -285,25 +242,10 @@ export function ExplorePage() {
                             <div
                                 key={t.tag}
                                 onClick={() => handleTagClick(t.tag)}
-                                className="flex flex-col gap-1.5 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-md"
-                                style={{
-                                    background: "#FDFAF4",
-                                    border: "1px solid rgba(42,42,37,0.08)",
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor =
-                                        "rgba(107,143,94,0.35)";
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor =
-                                        "rgba(42,42,37,0.08)";
-                                }}
+                                className="flex flex-col gap-1.5 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-md bg-card border border-border/60 hover:border-primary/35"
                             >
                                 <span className="text-2xl">#</span>
-                                <span
-                                    className="text-foreground text-[14px]"
-                                    style={{ fontWeight: 700 }}
-                                >
+                                <span className="text-foreground text-[14px] font-bold">
                                     {t.tag}
                                 </span>
                                 <span className="text-muted-foreground text-[12px]">

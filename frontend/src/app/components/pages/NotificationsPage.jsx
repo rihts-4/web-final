@@ -58,21 +58,10 @@ export function NotificationsPage() {
     }, []);
 
     return (
-        <div
-            className="flex flex-col h-full overflow-y-auto"
-            style={{ fontFamily: "'Nunito', sans-serif" }}
-        >
-            <div
-                className="px-5 py-4 flex items-center gap-2 flex-shrink-0"
-                style={{
-                    borderBottom: "1px solid rgba(42,42,37,0.08)",
-                }}
-            >
-                <Bell size={18} style={{ color: "#6B8F5E" }} />
-                <h1
-                    className="text-foreground text-[18px]"
-                    style={{ fontWeight: 800 }}
-                >
+        <div className="flex flex-col h-full overflow-y-auto font-['Nunito',sans-serif]">
+            <div className="px-5 py-4 flex items-center gap-2 flex-shrink-0 border-b border-border/60">
+                <Bell size={18} className="text-primary" />
+                <h1 className="text-foreground text-lg font-extrabold">
                     Ripples
                 </h1>
             </div>
@@ -83,13 +72,10 @@ export function NotificationsPage() {
             ) : notifs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center flex-1 text-center px-8">
                     <span className="text-5xl mb-4">🔔</span>
-                    <h2
-                        className="text-foreground text-[18px] mb-2"
-                        style={{ fontWeight: 800 }}
-                    >
+                    <h2 className="text-foreground text-lg mb-2 font-extrabold">
                         No notifications yet
                     </h2>
-                    <p className="text-muted-foreground text-[14px] leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                         When someone interacts with you, you'll see it here.
                     </p>
                 </div>
@@ -97,37 +83,23 @@ export function NotificationsPage() {
                 notifs.map((n) => (
                 <div
                     key={n.id}
-                    className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-secondary/40"
-                    style={{
-                        borderBottom: "1px solid rgba(42,42,37,0.06)",
-                    }}
+                    className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-secondary/40 border-b border-[rgba(42,42,37,0.06)]"
                 >
                     <span className="text-xl flex-shrink-0">
                         {n.emoji}
                     </span>
-                    <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs"
-                        style={{
-                            background: "#6B8F5E",
-                            color: "#FDFAF4",
-                            outline: "2px solid rgba(107,143,94,0.2)",
-                            outlineOffset: 1,
-                        }}
-                    >
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs bg-primary text-card outline outline-2 outline-primary/20 outline-offset-1">
                         {n.handle?.charAt(0).toUpperCase() || "U"}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                        <span
-                            className="text-foreground text-[14px]"
-                            style={{ fontWeight: 700 }}
-                        >
+                        <span className="text-foreground text-sm font-bold">
                             {n.user}{" "}
                         </span>
-                        <span className="text-foreground text-[14px]">
+                        <span className="text-foreground text-sm">
                             {n.action}
                         </span>
-                        <p className="text-muted-foreground text-[12px] mt-0.5">
+                        <p className="text-muted-foreground text-xs mt-0.5">
                             {n.time}
                         </p>
                     </div>

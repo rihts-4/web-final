@@ -2,21 +2,10 @@ import { DeckFeed } from "../components/DeckFeed";
 
 export function HomePage({ posts, onLike, onRepost, onBookmark, onReply }) {
     return (
-        <div
-            className="flex flex-col h-full"
-            style={{ fontFamily: "'Nunito', sans-serif" }}
-        >
-            <div
-                className="px-5 py-3.5 flex items-center justify-between flex-shrink-0"
-                style={{
-                    borderBottom: "1px solid rgba(42,42,37,0.08)",
-                }}
-            >
+        <div className="flex flex-col h-full">
+            <div className="px-5 py-3.5 flex items-center justify-between flex-shrink-0 border-b border-border/60">
                 <div>
-                    <h1
-                        className="text-foreground text-[18px]"
-                        style={{ fontWeight: 800 }}
-                    >
+                    <h1 className="text-foreground text-[18px] font-extrabold">
                         Your Garden
                     </h1>
                     <p className="text-muted-foreground text-[11px]">
@@ -24,20 +13,10 @@ export function HomePage({ posts, onLike, onRepost, onBookmark, onReply }) {
                     </p>
                 </div>
                 <div className="flex items-center gap-1.5">
-                    <span
-                        className="px-3 py-1 rounded-full text-[12px]"
-                        style={{
-                            background: "rgba(107,143,94,0.12)",
-                            color: "#6B8F5E",
-                            fontWeight: 700,
-                        }}
-                    >
+                    <span className="px-3 py-1 rounded-full text-[12px] bg-primary/15 text-primary font-bold">
                         For you
                     </span>
-                    <span
-                        className="px-3 py-1 rounded-full text-[12px] text-muted-foreground cursor-pointer hover:bg-secondary transition-colors"
-                        style={{ fontWeight: 500 }}
-                    >
+                    <span className="px-3 py-1 rounded-full text-[12px] text-muted-foreground font-medium cursor-pointer hover:bg-secondary transition-colors">
                         Following
                     </span>
                 </div>

@@ -68,11 +68,7 @@ export function Layout({ children }) {
 
     return (
         <div
-            className="h-screen flex overflow-hidden"
-            style={{
-                background: "#F4F0E6",
-                fontFamily: "'Nunito', sans-serif",
-            }}
+            className="h-screen flex overflow-hidden bg-background font-['Nunito',sans-serif]"
         >
             <Sidebar
                 activeTab={getActiveNav()}
@@ -92,8 +88,7 @@ export function Layout({ children }) {
             />
 
             <main
-                className="flex-1 min-w-0 flex overflow-hidden"
-                style={{ borderRight: "1px solid rgba(42,42,37,0.1)" }}
+                className="flex-1 min-w-0 flex overflow-hidden pb-16 md:pb-0 border-r border-border/80"
             >
                 <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
                     {children}

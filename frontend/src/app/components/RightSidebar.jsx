@@ -4,19 +4,10 @@ export function RightSidebar({ hashtags, users, onTopicClick, onUserClick }) {
   return (
     <aside className="w-[300px] pl-5 flex flex-col gap-5">
       {hashtags.length > 0 && (
-        <div
-          className="rounded-3xl overflow-hidden"
-          style={{
-            background: "#FDFAF4",
-            border: "1px solid rgba(42,42,37,0.08)",
-          }}
-        >
+        <div className="rounded-3xl overflow-hidden bg-card border border-border/60">
           <div className="px-4 pt-4 pb-2 flex items-center gap-2">
-            <TrendingUp size={16} style={{ color: "#6B8F5E" }} />
-            <h2
-              className="text-foreground text-[15px]"
-              style={{ fontWeight: 800 }}
-            >
+            <TrendingUp size={16} className="text-primary" />
+            <h2 className="text-foreground text-[15px] font-extrabold">
               Growing topics
             </h2>
           </div>
@@ -26,20 +17,11 @@ export function RightSidebar({ hashtags, users, onTopicClick, onUserClick }) {
               onClick={() => onTopicClick && onTopicClick(t.tag)}
               className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-secondary/60 rounded-xl mx-1"
             >
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                style={{
-                  background: "rgba(107,143,94,0.12)",
-                  color: "#6B8F5E",
-                }}
-              >
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold bg-primary/12 text-primary">
                 #
               </div>
               <div className="flex-1 min-w-0">
-                <p
-                  className="text-foreground text-[14px] truncate"
-                  style={{ fontWeight: 700 }}
-                >
+                <p className="text-foreground text-[14px] truncate font-bold">
                   #{t.tag}
                 </p>
                 <p className="text-muted-foreground text-[12px]">
@@ -52,18 +34,9 @@ export function RightSidebar({ hashtags, users, onTopicClick, onUserClick }) {
       )}
 
       {users.length > 0 && (
-        <div
-          className="rounded-3xl overflow-hidden"
-          style={{
-            background: "#FDFAF4",
-            border: "1px solid rgba(42,42,37,0.08)",
-          }}
-        >
+        <div className="rounded-3xl overflow-hidden bg-card border border-border/60">
           <div className="px-4 pt-4 pb-2">
-            <h2
-              className="text-foreground text-[15px]"
-              style={{ fontWeight: 800 }}
-            >
+            <h2 className="text-foreground text-[15px] font-extrabold">
               Top posters
             </h2>
           </div>
@@ -73,22 +46,11 @@ export function RightSidebar({ hashtags, users, onTopicClick, onUserClick }) {
               onClick={() => onUserClick && onUserClick(u.username)}
               className="flex items-center gap-2.5 px-4 py-3 mx-1 rounded-xl cursor-pointer transition-colors hover:bg-secondary/60"
             >
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs"
-                style={{
-                  background: "#6B8F5E",
-                  color: "#FDFAF4",
-                  outline: "2px solid rgba(107,143,94,0.25)",
-                  outlineOffset: 1,
-                }}
-              >
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs bg-primary text-card outline outline-2 outline-primary/25 outline-offset-1">
                 {u.username?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="flex-1 min-w-0">
-                <p
-                  className="text-foreground text-[14px] truncate"
-                  style={{ fontWeight: 700 }}
-                >
+                <p className="text-foreground text-[14px] truncate font-bold">
                   {u.display_name}
                 </p>
                 <p className="text-muted-foreground text-[12px]">
