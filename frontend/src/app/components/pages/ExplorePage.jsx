@@ -15,6 +15,7 @@ export function ExplorePage() {
     const [searchResults, setSearchResults] = useState(null);
     const [isSearching, setIsSearching] = useState(false);
     const [topics, setTopics] = useState([]);
+    const [postError, setPostError] = useState(null);
 
     useEffect(() => {
         api.feed.getTrending().then((data) => {
@@ -80,50 +81,42 @@ export function ExplorePage() {
     };
 
     const handleLike = async (id) => {
-        try {
-            const post = selectedPosts.find((p) => p.id === id);
-            if (!post) return;
-            if (post.liked) {
-                await api.posts.unlike(id);
-                setSelectedPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id
-                            ? { ...p, liked: false, likes: p.likes - 1 }
-                            : p,
-                    ),
-                );
-            } else {
-                await api.posts.like(id);
-                setSelectedPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id
-                            ? { ...p, liked: true, likes: p.likes + 1 }
-                            : p,
-                    ),
-                );
-            }
-        } catch (err) {
-            alert(err.message);
+        const post = selectedPosts.find((p) => p.id === id);
+        if (!post) return;
+        if (post.liked) {
+            await api.posts.unlike(id);
+            setSelectedPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id
+                        ? { ...p, liked: false, likes: p.likes - 1 }
+                        : p,
+                ),
+            );
+        } else {
+            await api.posts.like(id);
+            setSelectedPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id
+                        ? { ...p, liked: true, likes: p.likes + 1 }
+                        : p,
+                ),
+            );
         }
     };
 
     const handlePostFollow = async (postId) => {
         const post = selectedPosts.find((p) => p.id === postId);
         if (!post) return;
-        try {
-            if (post.isFollowing) {
-                await api.users.unfollow(post.userId);
-            } else {
-                await api.users.follow(post.userId);
-            }
-            setSelectedPosts((prev) =>
-                prev.map((p) =>
-                    p.id === postId ? { ...p, isFollowing: !p.isFollowing } : p,
-                ),
-            );
-        } catch (err) {
-            alert(err.message);
+        if (post.isFollowing) {
+            await api.users.unfollow(post.userId);
+        } else {
+            await api.users.follow(post.userId);
         }
+        setSelectedPosts((prev) =>
+            prev.map((p) =>
+                p.id === postId ? { ...p, isFollowing: !p.isFollowing } : p,
+            ),
+        );
     };
 
     if (selectedTag) {
@@ -156,6 +149,11 @@ export function ExplorePage() {
                         </p>
                     </div>
                 </div>
+                {postError && (
+                    <p className="px-5 py-2 text-[13px]" style={{ color: "#C0453A", fontWeight: 600 }}>
+                        {postError}
+                    </p>
+                )}
                 <div className="flex-1">
                     {selectedPosts.length === 0 ? (
                         <div className="flex items-center justify-center h-full">

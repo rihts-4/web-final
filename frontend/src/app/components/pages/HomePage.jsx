@@ -7,6 +7,7 @@ export function HomePage() {
     const { user } = useUser();
     const [posts, setPosts] = useState([]);
     const [activeTab, setActiveTab] = useState("for-you");
+    const [postError, setPostError] = useState(null);
 
     useEffect(() => {
         const loadPosts = async () => {
@@ -39,36 +40,32 @@ export function HomePage() {
     }, [activeTab]);
 
     const handleLike = async (id) => {
-        try {
-            const post = posts.find((p) => p.id === id);
-            if (post.liked) {
-                await api.posts.unlike(id);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id
-                            ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
-                            : p,
-                    ),
-                );
-            } else {
-                await api.posts.like(id);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
-                    ),
-                );
-            }
-        } catch (err) {
-            alert(err.message);
+        const post = posts.find((p) => p.id === id);
+        if (post.liked) {
+            await api.posts.unlike(id);
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id
+                        ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
+                        : p,
+                ),
+            );
+        } else {
+            await api.posts.like(id);
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
+                ),
+            );
         }
     };
 
     const handleRepost = async (id) => {
-        alert("Repost feature not available");
+        setPostError("Repost feature not available");
     };
 
     const handleBookmark = async (id) => {
-        alert("Bookmark feature not available");
+        setPostError("Bookmark feature not available");
     };
 
     const handleDelete = async (id) => {
@@ -76,31 +73,27 @@ export function HomePage() {
             await api.posts.delete(id);
             setPosts((prev) => prev.filter((p) => p.id !== id));
         } catch (err) {
-            alert(err.message);
+            setPostError(err.message);
         }
     };
 
     const handleFollow = async (id) => {
-        try {
-            const post = posts.find((p) => p.id === id);
-            if (!post) return;
-            if (post.isFollowing) {
-                await api.users.unfollow(post.userId);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id ? { ...p, isFollowing: false } : p
-                    ),
-                );
-            } else {
-                await api.users.follow(post.userId);
-                setPosts((prev) =>
-                    prev.map((p) =>
-                        p.id === id ? { ...p, isFollowing: true } : p
-                    ),
-                );
-            }
-        } catch (err) {
-            alert(err.message);
+        const post = posts.find((p) => p.id === id);
+        if (!post) return;
+        if (post.isFollowing) {
+            await api.users.unfollow(post.userId);
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id ? { ...p, isFollowing: false } : p
+                ),
+            );
+        } else {
+            await api.users.follow(post.userId);
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id ? { ...p, isFollowing: true } : p
+                ),
+            );
         }
     };
 
@@ -146,6 +139,11 @@ export function HomePage() {
                     </button>
                 </div>
             </div>
+            {postError && (
+                <p className="px-5 py-2 text-[13px]" style={{ color: "#C0453A", fontWeight: 600 }}>
+                    {postError}
+                </p>
+            )}
             <DeckFeed
                 posts={posts}
                 onLike={handleLike}

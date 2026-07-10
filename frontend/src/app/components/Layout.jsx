@@ -29,6 +29,8 @@ export function Layout({ children }) {
     const [showCompose, setShowCompose] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [replyPost, setReplyPost] = useState(null);
+    const [postError, setPostError] = useState(null);
+    const [isPosting, setIsPosting] = useState(false);
     const [trending, setTrending] = useState({ hashtags: [], users: [] });
 
     useEffect(() => {
@@ -52,11 +54,15 @@ export function Layout({ children }) {
     };
 
     const handlePost = async (content, image) => {
+        setIsPosting(true);
+        setPostError(null);
         try {
             await api.posts.create({ content, image });
             setShowCompose(false);
         } catch (err) {
-            alert(err.message);
+            setPostError(err.message);
+        } finally {
+            setIsPosting(false);
         }
     };
 
@@ -115,9 +121,11 @@ export function Layout({ children }) {
 
             {showCompose && (
                 <ComposeModal
-                    onClose={() => setShowCompose(false)}
+                    onClose={() => { setShowCompose(false); setPostError(null); }}
                     onPost={handlePost}
                     currentUser={contextUser}
+                    isLoading={isPosting}
+                    error={postError}
                 />
             )}
 

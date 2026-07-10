@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { X, Image, PenLine } from "lucide-react";
 
-export function ComposeModal({ onClose, onPost, currentUser }) {
+export function ComposeModal({ onClose, onPost, currentUser, isLoading, error }) {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -154,38 +154,45 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
               <Image size={17} />
             </button>
           </div>
-          <div className="flex items-center gap-3">
-            {content.length > 0 && (
-              <span
-                className="text-[12px]"
+          <div className="flex flex-col items-end gap-2">
+            {error && (
+              <p className="text-[12px] text-right" style={{ color: "#C0453A", fontWeight: 600 }}>
+                {error}
+              </p>
+            )}
+            <div className="flex items-center gap-3">
+              {content.length > 0 && (
+                <span
+                  className="text-[12px]"
+                  style={{
+                    color:
+                      remaining < 30
+                        ? overLimit
+                          ? "#C0453A"
+                          : "#B5A040"
+                        : "#B5B0A4",
+                    fontWeight: 600,
+                  }}
+                >
+                  {remaining}
+                </span>
+              )}
+              <button
+                onClick={handlePost}
+                disabled={!content.trim() || overLimit || isLoading}
+                className="px-5 py-2 rounded-2xl text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
                 style={{
-                  color:
-                    remaining < 30
-                      ? overLimit
-                        ? "#C0453A"
-                        : "#B5A040"
-                      : "#B5B0A4",
-                  fontWeight: 600,
+                  background: "#6B8F5E",
+                  color: "#FDFAF4",
+                  fontWeight: 700,
+                  boxShadow: content.trim()
+                    ? "0 4px 14px rgba(107,143,94,0.4)"
+                    : "none",
                 }}
               >
-                {remaining}
-              </span>
-            )}
-            <button
-              onClick={handlePost}
-              disabled={!content.trim() || overLimit}
-              className="px-5 py-2 rounded-2xl text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
-              style={{
-                background: "#6B8F5E",
-                color: "#FDFAF4",
-                fontWeight: 700,
-                boxShadow: content.trim()
-                  ? "0 4px 14px rgba(107,143,94,0.4)"
-                  : "none",
-              }}
-            >
-              Plant it 🌱
-            </button>
+                {isLoading ? "Planting..." : "Plant it 🌱"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -14,6 +14,8 @@ export function ProfilePage() {
   const [posts, setPosts] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [followError, setFollowError] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const targetUsername = username || contextUser?.username;
 
@@ -34,6 +36,7 @@ export function ProfilePage() {
   useEffect(() => {
     if (targetUsername) {
       const fetchProfile = async () => {
+        setProfileLoading(true);
         try {
           const data = await api.users.getProfile(targetUsername);
           setProfile(data);
@@ -59,13 +62,15 @@ export function ProfilePage() {
           setPosts(transformedPosts);
         } catch (err) {
           console.error("Failed to fetch profile:", err);
+        } finally {
+          setProfileLoading(false);
         }
       };
       fetchProfile();
     }
   }, [targetUsername, username, contextUser]);
 
-  if (!profile) {
+  if (profileLoading || !profile) {
     return (
       <div className="h-full flex items-center justify-center">
         <p className="text-muted-foreground">Loading profile...</p>
@@ -76,8 +81,9 @@ export function ProfilePage() {
   const isOwnProfile = !username || username === contextUser?.username;
 
   const handleFollowToggle = async () => {
+    setFollowError(null);
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       if (isFollowing) {
         await api.users.unfollow(profile.user.id);
         setIsFollowing(false);
@@ -86,59 +92,51 @@ export function ProfilePage() {
         setIsFollowing(true);
       }
     } catch (err) {
-      alert(err.message);
+      setFollowError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLike = async (id) => {
-    try {
-      const post = posts.find((p) => p.id === id);
-      if (!post) return;
-      if (post.liked) {
-        await api.posts.unlike(id);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id
-              ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
-              : p,
-          ),
-        );
-      } else {
-        await api.posts.like(id);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
-          ),
-        );
-      }
-    } catch (err) {
-      alert(err.message);
+    const post = posts.find((p) => p.id === id);
+    if (!post) return;
+    if (post.liked) {
+      await api.posts.unlike(id);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
+            : p,
+        ),
+      );
+    } else {
+      await api.posts.like(id);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
+        ),
+      );
     }
   };
 
   const handlePostFollow = async (id) => {
-    try {
-      const post = posts.find((p) => p.id === id);
-      if (!post) return;
-      if (post.isFollowing) {
-        await api.users.unfollow(post.userId);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id ? { ...p, isFollowing: false } : p
-          ),
-        );
-      } else {
-        await api.users.follow(post.userId);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id ? { ...p, isFollowing: true } : p
-          ),
-        );
-      }
-    } catch (err) {
-      alert(err.message);
+    const post = posts.find((p) => p.id === id);
+    if (!post) return;
+    if (post.isFollowing) {
+      await api.users.unfollow(post.userId);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, isFollowing: false } : p
+        ),
+      );
+    } else {
+      await api.users.follow(post.userId);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, isFollowing: true } : p
+        ),
+      );
     }
   };
 
@@ -211,20 +209,27 @@ export function ProfilePage() {
           </div>
 
           {!isOwnProfile && (
-            <button
-              onClick={handleFollowToggle}
-              disabled={isLoading}
-              className="px-6 py-2 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
-              style={{
-                background: isFollowing ? "rgba(107,143,94,0.12)" : "#6B8F5E",
-                color: isFollowing ? "#6B8F5E" : "#FDFAF4",
-                fontWeight: 700,
-                border: isFollowing ? "1.5px solid #6B8F5E" : "none",
-                opacity: isLoading ? 0.6 : 1,
-              }}
-            >
-              {isLoading ? "..." : isFollowing ? "Following" : "Follow"}
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                onClick={handleFollowToggle}
+                disabled={isLoading}
+                className="px-6 py-2 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
+                style={{
+                  background: isFollowing ? "rgba(107,143,94,0.12)" : "#6B8F5E",
+                  color: isFollowing ? "#6B8F5E" : "#FDFAF4",
+                  fontWeight: 700,
+                  border: isFollowing ? "1.5px solid #6B8F5E" : "none",
+                  opacity: isLoading ? 0.6 : 1,
+                }}
+              >
+                {isLoading ? "Loading..." : isFollowing ? "Following" : "Follow"}
+              </button>
+              {followError && (
+                <p className="text-[12px] text-right" style={{ color: "#C0453A", fontWeight: 600 }}>
+                  {followError}
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>

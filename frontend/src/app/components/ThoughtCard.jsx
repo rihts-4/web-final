@@ -123,6 +123,8 @@ export function ThoughtCard({
 
     // "like" = dragging right | "skip" = dragging left | null = neutral
     const [gesture, setGesture] = useState(null);
+    const [actionLoading, setActionLoading] = useState(null);
+    const [actionError, setActionError] = useState(null);
 
     const THRESHOLD = 90;
 
@@ -156,7 +158,13 @@ export function ThoughtCard({
         if (!origin.current || !isTop) return;
         if (moved.current) {
             if (dragX > THRESHOLD) {
-                onLike(post.id);
+                if (!actionLoading) {
+                    setActionError(null);
+                    setActionLoading('like');
+                    onLike(post.id)
+                        .catch((err) => setActionError(err.message))
+                        .finally(() => setActionLoading(null));
+                }
             } else if (dragX < -THRESHOLD) {
                 onSwipedAway?.();
             }
@@ -165,7 +173,35 @@ export function ThoughtCard({
         setDragging(false);
         setGesture(null);
         origin.current = null;
-    }, [dragX, isTop, onLike, onSwipedAway, post.id]);
+    }, [dragX, isTop, onLike, onSwipedAway, post.id, actionLoading]);
+
+    const handleLikeAction = async (e) => {
+        e.stopPropagation();
+        if (actionLoading) return;
+        setActionError(null);
+        setActionLoading('like');
+        try {
+            await onLike(post.id);
+        } catch (err) {
+            setActionError(err.message);
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
+    const handleFollowAction = async (e) => {
+        e.stopPropagation();
+        if (actionLoading) return;
+        setActionError(null);
+        setActionLoading('follow');
+        try {
+            await onFollow(post.id);
+        } catch (err) {
+            setActionError(err.message);
+        } finally {
+            setActionLoading(null);
+        }
+    };
 
     const rotation = dragging ? dragX * 0.06 : 0;
     const washAlpha = Math.max(0, Math.abs(dragX) - 30) / 220;
@@ -388,10 +424,7 @@ export function ThoughtCard({
                     }}
                 >
                     <ActionBtn
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onLike(post.id);
-                        }}
+                        onClick={handleLikeAction}
                         icon={
                             <Heart
                                 size={19}
@@ -399,21 +432,20 @@ export function ThoughtCard({
                                 fill={post.liked ? "currentColor" : "none"}
                             />
                         }
-                        label={formatCount(post.likes)}
+                        label={actionLoading === 'like' ? "..." : formatCount(post.likes)}
                         activeColor={post.liked ? "#C0453A" : null}
                         tooltip="Like — swipe right →"
+                        disabled={!!actionLoading}
                     />
 
                     {currentUserHandle !== post.user.handle && (
                         <ActionBtn
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onFollow(post.id);
-                            }}
+                            onClick={handleFollowAction}
                             icon={<UserPlus size={19} strokeWidth={2.4} />}
-                            label={post.isFollowing ? "Unfollow" : "Follow"}
+                            label={actionLoading === 'follow' ? "..." : (post.isFollowing ? "Unfollow" : "Follow")}
                             activeColor={post.isFollowing ? "#6B8F5E" : null}
                             tooltip={post.isFollowing ? "Unfollow this user" : "Follow this user"}
+                            disabled={!!actionLoading}
                         />
                     )}
 
@@ -429,6 +461,11 @@ export function ThoughtCard({
                     </span>
                 </div>
                 </div>
+                {actionError && (
+                    <p className="mt-2 text-[12px]" style={{ color: "#C0453A", fontWeight: 600 }}>
+                        {actionError}
+                    </p>
+                )}
             </div>
         </div>
     );
@@ -458,7 +495,7 @@ export function UserAvatar({ handle, name, size = 40, onClick }) {
 }
 
 /* ── ActionBtn ────────────────────────────────────────── */
-function ActionBtn({ onClick, icon, label, activeColor, tooltip }) {
+function ActionBtn({ onClick, icon, label, activeColor, tooltip, disabled }) {
     const [hov, setHov] = useState(false);
     const active = activeColor !== null;
 
@@ -468,7 +505,8 @@ function ActionBtn({ onClick, icon, label, activeColor, tooltip }) {
             onMouseEnter={() => setHov(true)}
             onMouseLeave={() => setHov(false)}
             title={tooltip}
-            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl transition-all"
+            disabled={disabled}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
                 color: active ? activeColor : hov ? "#2A2A25" : "#B5B0A4",
                 background: hov ? "rgba(42,42,37,0.06)" : "transparent",

@@ -22,9 +22,15 @@ export function Dashboard({ initialUser }) {
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [replyPost, setReplyPost] = useState(null);
     const [selectedTopic, setSelectedTopic] = useState(null);
+    const [postError, setPostError] = useState(null);
+    const [isPosting, setIsPosting] = useState(false);
+    const [feedLoading, setFeedLoading] = useState(true);
+    const [feedError, setFeedError] = useState(null);
 
     useEffect(() => {
         const initApp = async () => {
+            setFeedLoading(true);
+            setFeedError(null);
             try {
                 const feedPosts = await api.feed.getPersonal();
                 const transformedPosts = feedPosts.map((post) => ({
@@ -43,12 +49,17 @@ export function Dashboard({ initialUser }) {
                 }));
                 setPosts(transformedPosts);
             } catch (err) {
-                console.error("Failed to load posts:", err);
+                setFeedError(err.message);
+            } finally {
+                setFeedLoading(false);
             }
         };
         initApp();
+    }, []);
 
     const handlePost = async (content, image) => {
+        setIsPosting(true);
+        setPostError(null);
         try {
             await api.posts.create({ content, image });
             const feedPosts = await api.feed.getPersonal();
@@ -68,7 +79,9 @@ export function Dashboard({ initialUser }) {
             }));
             setPosts(transformedPosts);
         } catch (err) {
-            alert(err.message);
+            setPostError(err.message);
+        } finally {
+            setIsPosting(false);
         }
     };
 
@@ -450,9 +463,11 @@ export function Dashboard({ initialUser }) {
 
             {showCompose && (
                 <ComposeModal
-                    onClose={() => setShowCompose(false)}
+                    onClose={() => { setShowCompose(false); setPostError(null); }}
                     onPost={handlePost}
                     currentUser={currentUser}
+                    isLoading={isPosting}
+                    error={postError}
                 />
             )}
 

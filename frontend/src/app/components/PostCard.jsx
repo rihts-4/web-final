@@ -16,6 +16,36 @@ function formatCount(n) {
 export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
   const [showMenu, setShowMenu] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [actionError, setActionError] = useState(null);
+
+  const handleLikeAction = async (e) => {
+    e.stopPropagation();
+    if (actionLoading) return;
+    setActionError(null);
+    setActionLoading("like");
+    try {
+      await onLike(post.id);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleFollowAction = async (e) => {
+    e.stopPropagation();
+    if (actionLoading) return;
+    setActionError(null);
+    setActionLoading("follow");
+    try {
+      await onFollow(post.id);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   return (
     <article
@@ -94,68 +124,71 @@ export function PostCard({ post, onLike, onFollow, currentUserHandle }) {
 
          {/* Actions */}
          <div className="flex items-center gap-1 -ml-1.5">
-           {/* Resonate (like) */}
-           <ActionBtn
-             onClick={(e) => {
-               e.stopPropagation();
-               onLike(post.id);
-             }}
-             icon={<Zap size={17} fill={post.liked ? "currentColor" : "none"} />}
-             count={post.likes + (post.liked ? 1 : 0)}
-             active={post.liked}
-             activeColor="text-amber-400"
-             hoverColor="amber"
-           />
+            {/* Resonate (like) */}
+            <ActionBtn
+              onClick={handleLikeAction}
+              icon={<Zap size={17} fill={post.liked ? "currentColor" : "none"} />}
+              count={actionLoading === "like" ? "..." : post.likes + (post.liked ? 1 : 0)}
+              active={post.liked}
+              activeColor="text-amber-400"
+              hoverColor="amber"
+              disabled={!!actionLoading}
+            />
 
-           {/* Views */}
-           <ActionBtn
-             onClick={(e) => e.stopPropagation()}
-             icon={
-               <svg
-                 viewBox="0 0 24 24"
-                 width={17}
-                 height={17}
-                 fill="currentColor"
-               >
-                 <path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z" />
-               </svg>
-             }
-             count={post.views}
-             hoverColor="primary"
-           />
+            {/* Views */}
+            <ActionBtn
+              onClick={(e) => e.stopPropagation()}
+              icon={
+                <svg
+                  viewBox="0 0 24 24"
+                  width={17}
+                  height={17}
+                  fill="currentColor"
+                >
+                  <path d="M8.75 21V3h2v18h-2zM18 21V8.5h2V21h-2zM4 21l.004-10h2L6 21H4zm9.248 0v-7h2v7h-2z" />
+                </svg>
+              }
+              count={post.views}
+              hoverColor="primary"
+            />
 
-           {currentUserHandle !== post.user.handle && (
-             <button
-               onClick={(e) => {
-                 e.stopPropagation();
-                 onFollow(post.id);
-               }}
-               className={`p-1.5 rounded-lg transition-colors ${
-                 post.isFollowing
-                   ? "text-primary bg-primary/10"
-                   : "text-muted-foreground hover:text-primary hover:bg-primary/10"
-               }`}
-               title={post.isFollowing ? "Unfollow this user" : "Follow this user"}
-             >
-               <UserPlus size={17} />
-             </button>
-           )}
+            {currentUserHandle !== post.user.handle && (
+              <button
+                onClick={handleFollowAction}
+                disabled={!!actionLoading}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  actionLoading === "follow"
+                    ? "opacity-40 cursor-not-allowed"
+                    : post.isFollowing
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+                }`}
+                title={post.isFollowing ? "Unfollow this user" : "Follow this user"}
+              >
+                <UserPlus size={17} />
+              </button>
+            )}
 
-           <div className="flex items-center ml-auto gap-0.5">
-             <button
-               onClick={(e) => e.stopPropagation()}
-               className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-             >
-               <Share size={17} />
-             </button>
-           </div>
+            <div className="flex items-center ml-auto gap-0.5">
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              >
+                <Share size={17} />
+              </button>
+            </div>
          </div>
+         {actionError && (
+           <p className="text-[12px] mt-1 px-1" style={{ color: "#C0453A", fontWeight: 600 }}>
+             {actionError}
+           </p>
+         )}
       </div>
     </article>
   );
 }
 
-function ActionBtn({ onClick, icon, count, active, activeColor, hoverColor }) {
+function ActionBtn({ onClick, icon, count, active, activeColor, hoverColor, disabled }) {
   const hoverClasses = {
     primary: "hover:text-primary hover:bg-primary/10",
     emerald: "hover:text-emerald-400 hover:bg-emerald-400/10",
@@ -165,7 +198,8 @@ function ActionBtn({ onClick, icon, count, active, activeColor, hoverColor }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors ${
+      disabled={disabled}
+      className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
         active ? activeColor : `text-muted-foreground ${hoverClasses}`
       }`}
     >

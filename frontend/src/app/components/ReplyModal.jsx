@@ -58,6 +58,7 @@ export function ReplyModal({ post, currentUser, onClose }) {
     MOCK_REPLIES[post.id] ?? MOCK_REPLIES.default,
   );
   const [content, setContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef(null);
 
   const handleInput = (e) => {
@@ -68,6 +69,7 @@ export function ReplyModal({ post, currentUser, onClose }) {
 
   const submitReply = () => {
     if (!content.trim()) return;
+    setIsSubmitting(true);
     const newReply = {
       id: "rNew" + Date.now(),
       user: currentUser,
@@ -78,6 +80,7 @@ export function ReplyModal({ post, currentUser, onClose }) {
     setReplies((prev) => [...prev, newReply]);
     setContent("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
+    setTimeout(() => setIsSubmitting(false), 300);
   };
 
   return (
@@ -288,7 +291,7 @@ export function ReplyModal({ post, currentUser, onClose }) {
                 </div>
                 <button
                   onClick={submitReply}
-                  disabled={!content.trim()}
+                  disabled={!content.trim() || isSubmitting}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-[13px] transition-all disabled:opacity-40 hover:opacity-90"
                   style={{
                     background: "#6B8F5E",
@@ -300,7 +303,7 @@ export function ReplyModal({ post, currentUser, onClose }) {
                   }}
                 >
                   <Send size={13} />
-                  Reply
+                  {isSubmitting ? "Replying..." : "Reply"}
                 </button>
               </div>
             </div>

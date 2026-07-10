@@ -12,6 +12,7 @@ export function LoginPage() {
     const [display, setDisplay] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     const isLoginValid = username.trim() !== "" && password.trim() !== "";
     const isSignUpValid =
@@ -42,7 +43,7 @@ export function LoginPage() {
                 navigate("/");
             }
         } catch (err) {
-            alert(err.message);
+            setError(err.message);
         } finally {
             setIsLoading(false);
         }
@@ -238,9 +239,14 @@ export function LoginPage() {
                         />
                     )}
 
+                    {error && (
+                        <p className="text-[13px] text-center" style={{ color: "#C0453A", fontWeight: 600 }}>
+                            {error}
+                        </p>
+                    )}
                     <button
                         type="submit"
-                        disabled={isSignUp ? !isSignUpValid : !isLoginValid}
+                        disabled={isLoading || (isSignUp ? !isSignUpValid : !isLoginValid)}
                         className="w-full py-3.5 rounded-2xl text-[16px] transition-all hover:opacity-90 active:scale-[0.98] mt-2 disabled:opacity-40"
                         style={{
                             background: "#6B8F5E",
@@ -249,13 +255,14 @@ export function LoginPage() {
                             boxShadow: "0 6px 20px rgba(107,143,94,0.35)",
                         }}
                     >
-                        {isSignUp ? "Create account" : "Sign in to Grove"}
+                        {isLoading ? "Loading..." : (isSignUp ? "Create account" : "Sign in to Grove")}
                     </button>
                 </form>
 
                 <button
                     onClick={() => {
                         setIsSignUp(!isSignUp);
+                        setError(null);
                         setUsername("");
                         setPassword("");
                         setDisplay("");

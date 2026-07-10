@@ -6,6 +6,8 @@ export function ComposeBox({
   onPost,
   placeholder = "What's resonating with you?",
   replyTo,
+  isLoading,
+  error,
 }) {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -151,7 +153,7 @@ export function ComposeBox({
 
               <button
                 onClick={handlePost}
-                disabled={!content.trim() || overLimit}
+                disabled={!content.trim() || overLimit || isLoading}
                 className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-[14px] disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
                 style={{
                   background:
@@ -164,10 +166,15 @@ export function ComposeBox({
                 }}
               >
                 <Zap size={14} fill="white" />
-                Echo
+                {isLoading ? "Echoing..." : "Echo"}
               </button>
             </div>
           </div>
+          {error && (
+            <p className="text-[12px] mt-2" style={{ color: "#C0453A", fontWeight: 600 }}>
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </div>
