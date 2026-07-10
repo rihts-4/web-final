@@ -105,6 +105,10 @@ router.post("/:id/follow", auth, (req, res) => {
 
     const followingId = Number(req.params.id);
 
+    if (!Number.isInteger(followingId) || followingId < 1) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
     if (followingId === req.user.id) {
       return res.status(400).json({
         error: "You cannot follow yourself"
@@ -154,11 +158,17 @@ router.post("/:id/follow", auth, (req, res) => {
 router.delete("/:id/follow", auth, (req, res) => {
   try {
 
+    const followingId = Number(req.params.id);
+
+    if (!Number.isInteger(followingId) || followingId < 1) {
+      return res.status(400).json({ error: "Invalid user ID" });
+    }
+
     db.prepare(`
       DELETE FROM follows
       WHERE follower_id = ?
       AND following_id = ?
-    `).run(req.user.id, req.params.id);
+    `).run(req.user.id, followingId);
 
     res.json({
       message: "User unfollowed"

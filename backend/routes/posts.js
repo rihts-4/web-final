@@ -45,7 +45,9 @@ router.post("/", auth, upload.single("image"), (req, res) => {
       });
     }
 
-    if (content.length > 280) {
+    const trimmedContent = content.trim();
+
+    if (trimmedContent.length > 280) {
       return res.status(400).json({
         error: "Post exceeds 280 characters",
       });
@@ -63,9 +65,9 @@ router.post("/", auth, upload.single("image"), (req, res) => {
       VALUES (?, ?, ?)
     `
       )
-      .run(req.user.id, content, imagePath);
+      .run(req.user.id, trimmedContent, imagePath);
 
-    saveHashtags(result.lastInsertRowid, content);
+    saveHashtags(result.lastInsertRowid, trimmedContent);
 
     res.status(201).json({
       message: "Post created successfully",
@@ -85,6 +87,11 @@ router.post("/", auth, upload.single("image"), (req, res) => {
  */
 router.delete("/:id", auth, (req, res) => {
   try {
+    const postId = Number(req.params.id);
+    if (!Number.isInteger(postId) || postId < 1) {
+      return res.status(400).json({ error: "Invalid post ID" });
+    }
+
     const post = db
       .prepare(
         `
@@ -93,7 +100,7 @@ router.delete("/:id", auth, (req, res) => {
       WHERE id = ?
     `
       )
-      .get(req.params.id);
+      .get(postId);
 
     if (!post) {
       return res.status(404).json({
@@ -109,7 +116,7 @@ router.delete("/:id", auth, (req, res) => {
 
     db.prepare(
       "DELETE FROM posts WHERE id = ?"
-    ).run(req.params.id);
+    ).run(postId);
 
     res.json({
       message: "Post deleted",
@@ -128,6 +135,11 @@ router.delete("/:id", auth, (req, res) => {
  */
 router.post("/:id/like", auth, (req, res) => {
   try {
+    const postId = Number(req.params.id);
+    if (!Number.isInteger(postId) || postId < 1) {
+      return res.status(400).json({ error: "Invalid post ID" });
+    }
+
     const post = db
       .prepare(
         `
@@ -136,7 +148,7 @@ router.post("/:id/like", auth, (req, res) => {
       WHERE id = ?
     `
       )
-      .get(req.params.id);
+      .get(postId);
 
     if (!post) {
       return res.status(404).json({
@@ -150,7 +162,7 @@ router.post("/:id/like", auth, (req, res) => {
       (user_id, post_id)
       VALUES (?, ?)
     `
-    ).run(req.user.id, req.params.id);
+    ).run(req.user.id, postId);
 
     if (post.user_id !== req.user.id) {
       db.prepare(
@@ -159,7 +171,7 @@ router.post("/:id/like", auth, (req, res) => {
         (recipient_id, actor_id, type, post_id)
         VALUES (?, ?, ?, ?)
       `
-      ).run(post.user_id, req.user.id, "like", req.params.id);
+      ).run(post.user_id, req.user.id, "like", postId);
     }
 
     res.json({
@@ -179,13 +191,23 @@ router.post("/:id/like", auth, (req, res) => {
  */
 router.delete("/:id/like", auth, (req, res) => {
   try {
+    const postId = Number(req.params.id);
+    if (!Number.isInteger(postId) || postId < 1) {
+      return res.status(400).json({ error: "Invalid post ID" });
+    }
+
+    const post = db.prepare("SELECT id FROM posts WHERE id = ?").get(postId);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
     db.prepare(
       `
       DELETE FROM likes
       WHERE user_id = ?
       AND post_id = ?
     `
-    ).run(req.user.id, req.params.id);
+    ).run(req.user.id, postId);
 
     res.json({
       message: "Post unliked",

@@ -13,30 +13,38 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ error: "Username, display name, and password are required" });
     }
 
-    if (password.length < 6) {
+    const trimmedUser = username.trim();
+    const trimmedDisplay = display_name.trim();
+    const trimmedPass = password;
+
+    if (trimmedUser === "" || trimmedDisplay === "") {
+      return res.status(400).json({ error: "Username and display name cannot be blank" });
+    }
+
+    if (trimmedPass.length < 6) {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
     const existingUser = db
       .prepare("SELECT id FROM users WHERE username = ?")
-      .get(username);
+      .get(trimmedUser);
 
     if (existingUser) {
       return res.status(409).json({ error: "Username already exists" });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(trimmedPass, 10);
 
     const result = db
       .prepare("INSERT INTO users (username, display_name, password_hash) VALUES (?, ?, ?)")
-      .run(username, display_name, passwordHash);
+      .run(trimmedUser, trimmedDisplay, passwordHash);
 
     res.status(201).json({
       message: "User registered successfully",
       user: {
         id: result.lastInsertRowid,
-        username,
-        display_name
+        username: trimmedUser,
+        display_name: trimmedDisplay
       }
     });
   } catch (err) {
@@ -48,7 +56,7 @@ router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    if (!username || !password) {
+    if (!username || !password || username.trim() === "") {
       return res.status(400).json({ error: "Username and password are required" });
     }
 
