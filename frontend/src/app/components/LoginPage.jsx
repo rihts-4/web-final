@@ -26,15 +26,12 @@ export function LoginPage() {
         setIsLoading(true);
         try {
             if (isSignUp && isSignUpValid) {
-                const response = await api.auth.signup({
+                await api.auth.signup({
                     username,
                     display_name: display,
                     password,
                 });
-                localStorage.setItem("auth_token", response.token);
-                localStorage.setItem("user", JSON.stringify(response.user));
-                setUser(response.user);
-                navigate("/");
+                navigate("/login");
             } else if (!isSignUp && isLoginValid) {
                 const response = await api.auth.login({ username, password });
                 localStorage.setItem("auth_token", response.token);
