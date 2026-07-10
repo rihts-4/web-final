@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { RightSidebar } from "./RightSidebar";
@@ -32,10 +32,27 @@ export function Layout({ children }) {
     const [postError, setPostError] = useState(null);
     const [isPosting, setIsPosting] = useState(false);
     const [trending, setTrending] = useState({ hashtags: [], users: [] });
+    const firstTimeCheckDone = useRef(false);
+    const fromLogin = location.state?.fromLogin;
 
     useEffect(() => {
       api.feed.getTrending().then(setTrending).catch(() => {});
     }, []);
+
+    useEffect(() => {
+        if (!contextUser?.username || !fromLogin || firstTimeCheckDone.current) return;
+        firstTimeCheckDone.current = true;
+
+        navigate(location.pathname, { replace: true, state: {} });
+
+        api.users.checkHasPosts(contextUser.username)
+            .then((isFirstTime) => {
+                if (isFirstTime) {
+                    setShowOnboarding(true);
+                }
+            })
+            .catch(() => {});
+    }, [contextUser, fromLogin]);
 
     const getActiveNav = () => {
         const path = location.pathname;
@@ -59,6 +76,7 @@ export function Layout({ children }) {
         try {
             await api.posts.create({ content, image });
             setShowCompose(false);
+            setShowOnboarding(false);
         } catch (err) {
             setPostError(err.message);
         } finally {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { X, ChevronRight, ChevronLeft } from "lucide-react";
 
 const STEPS = [
@@ -14,10 +14,57 @@ export function OnboardingModal({ onDismiss }) {
   const [step, setStep] = useState(0);
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
+  const modalRef = useRef(null);
+  const previousFocus = useRef(null);
+
+  const getFocusableElements = useCallback(() => {
+    if (!modalRef.current) return [];
+    return Array.from(
+      modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    );
+  }, []);
+
+  const trapFocus = useCallback((e) => {
+    const focusable = getFocusableElements();
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }, [getFocusableElements]);
+
+  useEffect(() => {
+    previousFocus.current = document.activeElement;
+    const timer = setTimeout(() => {
+      const focusable = getFocusableElements();
+      if (focusable.length > 0) focusable[0].focus();
+    }, 0);
+    document.addEventListener("keydown", trapFocus);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("keydown", trapFocus);
+      previousFocus.current?.focus();
+    };
+  }, [trapFocus, getFocusableElements]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(42,42,37,0.45)] backdrop-blur-sm">
-      <div className="w-full max-w-[460px] rounded-3xl overflow-hidden shadow-2xl bg-card border border-border/80 font-['Nunito',sans-serif]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(42,42,37,0.45)] backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Getting started with Grove"
+    >
+      <div
+        ref={modalRef}
+        className="w-full max-w-[460px] rounded-3xl overflow-hidden shadow-2xl bg-card border border-border/80 font-['Nunito',sans-serif]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3">
           <span className="text-xs uppercase tracking-widest text-primary font-bold">
@@ -25,6 +72,7 @@ export function OnboardingModal({ onDismiss }) {
           </span>
           <button
             onClick={onDismiss}
+            aria-label="Close onboarding"
             className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-secondary transition-colors text-switch-background"
           >
             <X size={15} />
@@ -83,6 +131,7 @@ export function OnboardingModal({ onDismiss }) {
           <button
             onClick={() => setStep((s) => s - 1)}
             disabled={step === 0}
+            aria-label="Previous step"
             className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm transition-all disabled:opacity-0 text-muted-foreground font-semibold"
           >
             <ChevronLeft size={16} />
@@ -90,11 +139,14 @@ export function OnboardingModal({ onDismiss }) {
           </button>
 
           {/* Dot indicators */}
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5" role="tablist" aria-label="Onboarding steps">
             {STEPS.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setStep(i)}
+                role="tab"
+                aria-selected={i === step}
+                aria-label={`Step ${i + 1}: ${STEPS[i].title}`}
                 className="rounded-full transition-all"
                 style={{
                   width: i === step ? 20 : 7,
@@ -113,6 +165,7 @@ export function OnboardingModal({ onDismiss }) {
           {isLast ? (
             <button
               onClick={onDismiss}
+              aria-label="Finish and close onboarding"
               className="flex items-center gap-1.5 px-5 py-2 rounded-2xl text-sm transition-all hover:opacity-90 bg-primary text-card font-bold shadow-[0_4px_12px_rgba(107,143,94,0.3)]"
             >
               Enter Grove 🌿
@@ -120,6 +173,7 @@ export function OnboardingModal({ onDismiss }) {
           ) : (
             <button
               onClick={() => setStep((s) => s + 1)}
+              aria-label="Next step"
               className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm transition-all hover:opacity-90 bg-primary text-card font-bold"
             >
               Next

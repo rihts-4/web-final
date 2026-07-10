@@ -37,7 +37,7 @@ export function LoginPage() {
                 localStorage.setItem("auth_token", response.token);
                 localStorage.setItem("user", JSON.stringify(response.user));
                 setUser(response.user);
-                navigate("/");
+                navigate("/", { state: { fromLogin: true } });
             }
         } catch (err) {
             setError(err.message);

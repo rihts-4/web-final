@@ -76,6 +76,10 @@ export const api = {
     },
     users: {
         getProfile: (username) => request(`/users/${username}`),
+        checkHasPosts: async (username) => {
+            const data = await request(`/users/${username}`);
+            return !data.posts || data.posts.length === 0;
+        },
         follow: (id) =>
             request(`/users/${id}/follow`, {
                 method: "POST",
