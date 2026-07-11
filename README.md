@@ -1,5 +1,9 @@
 # Web Final — Microblogging Web Application
 
+## Project Overview
+
+Grove is a microblogging web application built for the Web Information Engineering group project. Users can create an account, publish short posts up to 280 characters with an optional image, follow other users, and read a feed built from the people they follow. On top of the required core, Grove also supports likes, hashtags, search, notifications, a trending panel, and image attachments. The frontend is a React single page app, the backend is an Express REST API backed by SQLite. Full design details, including architecture, data model, and API design, are documented in `design-document.md`.
+
 ## How to clone the repository
 ```bash
 git clone https://github.com/rihts-4/web-final.git
@@ -40,8 +44,8 @@ By default, the frontend runs on `http://localhost:5173`.
 > Run backend and frontend at the same time in **separate terminal tabs**.
 
 ## Repository structure
-- `/home/runner/work/web-final/web-final/backend` — Express + SQLite API
-- `/home/runner/work/web-final/web-final/frontend` — React + Vite client app
+- `backend/` — Express + SQLite API
+- `frontend/` — React + Vite client app
 
 ## Key technologies
 
@@ -62,22 +66,17 @@ By default, the frontend runs on `http://localhost:5173`.
 
 ## Code organization
 
-### Backend (`/home/runner/work/web-final/web-final/backend`)
+### Backend (`backend/`)
 - `server.js` — app entrypoint and route mounting
 - `db/schema.sql` — database schema
 - `db/database.js` — DB initialization
 - `middleware/` — auth and upload middleware
 - `routes/` — feature routes (`auth`, `users`, `posts`, `feed`, `search`, `notifications`)
 
-### Frontend (`/home/runner/work/web-final/web-final/frontend/src`)
+### Frontend (`frontend/src/`)
 - `main.jsx` — React app bootstrap
 - `app/App.jsx` — router and route wiring
 - `app/context/UserContext.jsx` — user state context
 - `app/services/api.js` — API request layer
 - `app/components/` — reusable and page-level UI components
 
-### AI Usage Declaration
-AI Agents usage
-- Scaffolding
-- PR Review
-- Making changes based on the review
