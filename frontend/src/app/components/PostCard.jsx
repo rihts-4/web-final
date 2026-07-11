@@ -196,7 +196,9 @@ function ActionBtn({ onClick, icon, count, active, activeColor, hoverColor, disa
       }`}
     >
       {icon}
-      {count > 0 && <span className="text-xs md:text-[13px]">{formatCount(count)}</span>}
+      {(count === "..." || count > 0) && (
+        <span className="text-xs md:text-[13px]">{formatCount(count)}</span>
+      )}
     </button>
   );
 }
