@@ -14,6 +14,8 @@ export function ProfilePage() {
   const [posts, setPosts] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [followError, setFollowError] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   const targetUsername = username || contextUser?.username;
 
@@ -34,6 +36,7 @@ export function ProfilePage() {
   useEffect(() => {
     if (targetUsername) {
       const fetchProfile = async () => {
+        setProfileLoading(true);
         try {
           const data = await api.users.getProfile(targetUsername);
           setProfile(data);
@@ -59,13 +62,15 @@ export function ProfilePage() {
           setPosts(transformedPosts);
         } catch (err) {
           console.error("Failed to fetch profile:", err);
+        } finally {
+          setProfileLoading(false);
         }
       };
       fetchProfile();
     }
   }, [targetUsername, username, contextUser]);
 
-  if (!profile) {
+  if (profileLoading || !profile) {
     return (
       <div className="h-full flex items-center justify-center">
         <p className="text-muted-foreground">Loading profile...</p>
@@ -76,8 +81,9 @@ export function ProfilePage() {
   const isOwnProfile = !username || username === contextUser?.username;
 
   const handleFollowToggle = async () => {
+    setFollowError(null);
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       if (isFollowing) {
         await api.users.unfollow(profile.user.id);
         setIsFollowing(false);
@@ -86,118 +92,93 @@ export function ProfilePage() {
         setIsFollowing(true);
       }
     } catch (err) {
-      alert(err.message);
+      setFollowError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleLike = async (id) => {
-    try {
-      const post = posts.find((p) => p.id === id);
-      if (!post) return;
-      if (post.liked) {
-        await api.posts.unlike(id);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id
-              ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
-              : p,
-          ),
-        );
-      } else {
-        await api.posts.like(id);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
-          ),
-        );
-      }
-    } catch (err) {
-      alert(err.message);
+    const post = posts.find((p) => p.id === id);
+    if (!post) return;
+    if (post.liked) {
+      await api.posts.unlike(id);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) }
+            : p,
+        ),
+      );
+    } else {
+      await api.posts.like(id);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
+        ),
+      );
     }
   };
 
   const handlePostFollow = async (id) => {
-    try {
-      const post = posts.find((p) => p.id === id);
-      if (!post) return;
-      if (post.isFollowing) {
-        await api.users.unfollow(post.userId);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id ? { ...p, isFollowing: false } : p
-          ),
-        );
-      } else {
-        await api.users.follow(post.userId);
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === id ? { ...p, isFollowing: true } : p
-          ),
-        );
-      }
-    } catch (err) {
-      alert(err.message);
+    const post = posts.find((p) => p.id === id);
+    if (!post) return;
+    if (post.isFollowing) {
+      await api.users.unfollow(post.userId);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, isFollowing: false } : p
+        ),
+      );
+    } else {
+      await api.users.follow(post.userId);
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, isFollowing: true } : p
+        ),
+      );
     }
   };
 
   return (
-    <div
-      className="flex flex-col h-full overflow-y-auto"
-      style={{ fontFamily: "'Nunito', sans-serif" }}
-    >
+    <div className="flex flex-col h-full overflow-y-auto font-['Nunito',sans-serif]">
       {!isOwnProfile && (
-        <div
-          className="px-5 py-3 flex-shrink-0"
-          style={{
-            borderBottom: "1px solid rgba(42,42,37,0.08)",
-          }}
-        >
+        <div className="px-5 py-3 flex-shrink-0 border-b border-border/60">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-[14px]"
-            style={{ color: "#6B8F5E", fontWeight: 700 }}
+            className="flex items-center gap-1.5 text-sm text-primary font-bold"
           >
             ← Back
           </button>
         </div>
       )}
 
-      <div
-        className="px-5 pt-4 pb-4 flex-shrink-0"
-        style={{
-          borderBottom: "1px solid rgba(42,42,37,0.08)",
-        }}
-      >
+      <div className="px-5 pt-4 pb-4 flex-shrink-0 border-b border-border/60">
         <div className="flex items-start gap-4 justify-between">
           <div className="flex items-start gap-4">
             <UserAvatar handle={profile.user.username} name={profile.user.display_name} size={64} />
 
             <div className="flex-1 min-w-0">
-              <h1
-                className="text-foreground text-[20px] mb-0.5"
-                style={{ fontWeight: 800 }}
-              >
+              <h1 className="text-foreground text-xl mb-0.5 font-extrabold">
                 {profile.user.display_name}
               </h1>
-              <p className="text-muted-foreground text-[14px] mb-3">
+              <p className="text-muted-foreground text-sm mb-3">
                 @{profile.user.username}
               </p>
 
-              <p className="text-foreground text-[14px] leading-relaxed mb-3">
+              <p className="text-foreground text-sm leading-relaxed mb-3">
                 Thoughts matter. Ideas grow in good soil.
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
-                  <span style={{ fontWeight: 700, color: "#2A2A25" }}>
+                  <span className="font-bold text-foreground">
                     {profile.followers || 0}
                   </span>
                   <span>Followers</span>
                 </div>
                 <div className="flex items-center gap-1 text-muted-foreground text-[13px]">
-                  <span style={{ fontWeight: 700, color: "#2A2A25" }}>
+                  <span className="font-bold text-foreground">
                     {profile.following || 0}
                   </span>
                   <span>Following</span>
@@ -211,34 +192,32 @@ export function ProfilePage() {
           </div>
 
           {!isOwnProfile && (
-            <button
-              onClick={handleFollowToggle}
-              disabled={isLoading}
-              className="px-6 py-2 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95 flex-shrink-0"
-              style={{
-                background: isFollowing ? "rgba(107,143,94,0.12)" : "#6B8F5E",
-                color: isFollowing ? "#6B8F5E" : "#FDFAF4",
-                fontWeight: 700,
-                border: isFollowing ? "1.5px solid #6B8F5E" : "none",
-                opacity: isLoading ? 0.6 : 1,
-              }}
-            >
-              {isLoading ? "..." : isFollowing ? "Following" : "Follow"}
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                onClick={handleFollowToggle}
+                disabled={isLoading}
+                className="px-6 py-2 rounded-xl text-sm transition-all hover:opacity-90 active:scale-95 flex-shrink-0 font-bold"
+                style={{
+                  background: isFollowing ? "rgba(107,143,94,0.12)" : "#6B8F5E",
+                  color: isFollowing ? "#6B8F5E" : "#FDFAF4",
+                  border: isFollowing ? "1.5px solid #6B8F5E" : "none",
+                  opacity: isLoading ? 0.6 : 1,
+                }}
+              >
+                {isLoading ? "Loading..." : isFollowing ? "Following" : "Follow"}
+              </button>
+              {followError && (
+                <p className="text-xs text-right text-destructive font-semibold">
+                  {followError}
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>
 
-      <div
-        className="px-5 py-3 flex-shrink-0"
-        style={{
-          borderBottom: "1px solid rgba(42,42,37,0.08)",
-        }}
-      >
-        <h2
-          className="text-foreground text-[15px]"
-          style={{ fontWeight: 700 }}
-        >
+      <div className="px-5 py-3 flex-shrink-0 border-b border-border/60">
+        <h2 className="text-foreground text-[15px] font-bold">
           {isOwnProfile ? "Your Thoughts" : "Thoughts"}
         </h2>
       </div>
@@ -246,13 +225,10 @@ export function ProfilePage() {
       {posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 text-center px-8">
           <span className="text-5xl mb-4">🌱</span>
-          <h2
-            className="text-foreground text-[18px] mb-2"
-            style={{ fontWeight: 800 }}
-          >
+          <h2 className="text-foreground text-lg mb-2 font-extrabold">
             No thoughts yet
           </h2>
-          <p className="text-muted-foreground text-[14px] leading-relaxed">
+          <p className="text-muted-foreground text-sm leading-relaxed">
             {isOwnProfile
               ? "Start sharing your thoughts to grow your garden."
               : "This user hasn't shared any thoughts yet."}

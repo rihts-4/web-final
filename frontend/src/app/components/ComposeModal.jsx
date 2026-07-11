@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { X, Image, PenLine } from "lucide-react";
 
-export function ComposeModal({ onClose, onPost, currentUser }) {
+export function ComposeModal({ onClose, onPost, currentUser, isLoading, error }) {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const fileInputRef = useRef(null);
@@ -30,34 +30,23 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "rgba(42,42,37,0.4)", backdropFilter: "blur(8px)" }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(42,42,37,0.4)] backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div
-        className="w-full max-w-[520px] rounded-3xl overflow-hidden shadow-2xl"
-        style={{
-          background: "#FDFAF4",
-          border: "1px solid rgba(42,42,37,0.1)",
-        }}
-      >
+      <div className="w-full max-w-[520px] rounded-3xl overflow-hidden shadow-2xl bg-card border border-border/80">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <div className="flex items-center gap-2" style={{ color: "#6B8F5E" }}>
+          <div className="flex items-center gap-2 text-primary">
             <PenLine size={18} />
-            <span
-              className="text-[15px]"
-              style={{ fontWeight: 700, color: "#2A2A25" }}
-            >
+            <span className="text-[15px] font-bold text-foreground">
               New Thought
             </span>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-secondary"
-            style={{ color: "#B5B0A4" }}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-colors hover:bg-secondary text-switch-background"
           >
             <X size={17} />
           </button>
@@ -65,15 +54,7 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
 
         {/* Compose area */}
         <div className="flex gap-3 px-5 pb-4">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 font-bold"
-            style={{
-              background: "#6B8F5E",
-              color: "#FDFAF4",
-              outline: "2px solid rgba(107,143,94,0.3)",
-              outlineOffset: 2,
-            }}
-          >
+          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 font-bold bg-primary text-card outline outline-2 outline-primary/30 outline-offset-2">
             {currentUser?.username?.charAt(0).toUpperCase() || "U"}
           </div>
 
@@ -84,12 +65,7 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
               onChange={handleInput}
               placeholder="What's growing in your mind?"
               rows={4}
-              className="w-full bg-transparent resize-none outline-none text-[17px] leading-relaxed placeholder-muted-foreground"
-              style={{
-                color: "#2A2A25",
-                fontFamily: "'Nunito', sans-serif",
-                fontWeight: 400,
-              }}
+              className="w-full bg-transparent resize-none outline-none text-lg leading-relaxed placeholder-muted-foreground text-foreground font-['Nunito',sans-serif] font-normal"
             />
           </div>
         </div>
@@ -97,17 +73,15 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
         {/* Image preview */}
         {selectedImage && (
           <div className="px-5 pb-3">
-            <div className="relative rounded-2xl overflow-hidden" style={{ maxHeight: 200 }}>
+            <div className="relative rounded-2xl overflow-hidden max-h-[200px]">
               <img
                 src={URL.createObjectURL(selectedImage)}
                 alt=""
-                className="w-full object-cover"
-                style={{ maxHeight: 200 }}
+                className="w-full object-cover max-h-[200px]"
               />
               <button
                 onClick={() => setSelectedImage(null)}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(0,0,0,0.6)", color: "#FDFAF4" }}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center bg-black/60 text-card"
               >
                 <X size={14} />
               </button>
@@ -121,12 +95,7 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
             <button
               key={tag}
               onClick={() => setContent((c) => c + " " + tag)}
-              className="text-[12px] px-2.5 py-1 rounded-full transition-colors hover:opacity-80"
-              style={{
-                background: "rgba(107,143,94,0.12)",
-                color: "#6B8F5E",
-                fontWeight: 600,
-              }}
+              className="text-xs px-2.5 py-1 rounded-full transition-colors hover:opacity-80 bg-primary/12 text-primary font-semibold"
             >
               {tag}
             </button>
@@ -134,11 +103,8 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
         </div>
 
         {/* Footer */}
-        <div
-          className="flex items-center justify-between px-5 py-3"
-          style={{ borderTop: "1px solid rgba(42,42,37,0.08)" }}
-        >
-          <div className="flex items-center gap-1" style={{ color: "#6B8F5E" }}>
+        <div className="flex items-center justify-between px-5 py-3 border-t border-border/60">
+          <div className="flex items-center gap-1 text-primary">
             <input
               ref={fileInputRef}
               type="file"
@@ -154,38 +120,34 @@ export function ComposeModal({ onClose, onPost, currentUser }) {
               <Image size={17} />
             </button>
           </div>
-          <div className="flex items-center gap-3">
-            {content.length > 0 && (
-              <span
-                className="text-[12px]"
-                style={{
-                  color:
-                    remaining < 30
-                      ? overLimit
-                        ? "#C0453A"
-                        : "#B5A040"
-                      : "#B5B0A4",
-                  fontWeight: 600,
-                }}
-              >
-                {remaining}
-              </span>
+          <div className="flex flex-col items-end gap-2">
+            {error && (
+              <p className="text-xs text-right text-destructive font-semibold">
+                {error}
+              </p>
             )}
-            <button
-              onClick={handlePost}
-              disabled={!content.trim() || overLimit}
-              className="px-5 py-2 rounded-2xl text-[14px] transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
-              style={{
-                background: "#6B8F5E",
-                color: "#FDFAF4",
-                fontWeight: 700,
-                boxShadow: content.trim()
-                  ? "0 4px 14px rgba(107,143,94,0.4)"
-                  : "none",
-              }}
-            >
-              Plant it 🌱
-            </button>
+            <div className="flex items-center gap-3">
+              {content.length > 0 && (
+                <span className={`text-xs font-semibold ${
+                  overLimit
+                    ? "text-destructive"
+                    : remaining < 30
+                      ? "text-[#B5A040]"
+                      : "text-switch-background"
+                }`}>
+                  {remaining}
+                </span>
+              )}
+              <button
+                onClick={handlePost}
+                disabled={!content.trim() || overLimit || isLoading}
+                className={`px-5 py-2 rounded-2xl text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 bg-primary text-card font-bold ${
+                  content.trim() ? "shadow-[0_4px_14px_rgba(107,143,94,0.4)]" : ""
+                }`}
+              >
+                {isLoading ? "Planting..." : "Plant it 🌱"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

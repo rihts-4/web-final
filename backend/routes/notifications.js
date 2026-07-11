@@ -52,12 +52,17 @@ router.get("/", auth, (req, res) => {
 router.patch("/:id/read", auth, (req, res) => {
   try {
 
+    const notifId = Number(req.params.id);
+    if (!Number.isInteger(notifId) || notifId < 1) {
+      return res.status(400).json({ error: "Invalid notification ID" });
+    }
+
     const result = db.prepare(`
       UPDATE notifications
       SET is_read = 1
       WHERE id = ?
       AND recipient_id = ?
-    `).run(req.params.id, req.user.id);
+    `).run(notifId, req.user.id);
 
     if (result.changes === 0) {
       return res.status(404).json({

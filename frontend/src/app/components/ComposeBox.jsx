@@ -6,6 +6,8 @@ export function ComposeBox({
   onPost,
   placeholder = "What's resonating with you?",
   replyTo,
+  isLoading,
+  error,
 }) {
   const [content, setContent] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
@@ -47,13 +49,7 @@ export function ComposeBox({
         </p>
       )}
       <div className="flex gap-3">
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ring-2 ring-border font-bold"
-          style={{
-            background: "#6B8F5E",
-            color: "#FDFAF4",
-          }}
-        >
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ring-2 ring-border font-bold bg-primary text-card">
           {currentUser?.username?.charAt(0).toUpperCase() || "U"}
         </div>
 
@@ -64,23 +60,20 @@ export function ComposeBox({
             onChange={handleInput}
             placeholder={placeholder}
             rows={3}
-            className="w-full bg-transparent text-foreground placeholder-muted-foreground resize-none outline-none text-[18px] leading-relaxed min-h-[80px]"
-            style={{ fontWeight: 400 }}
+            className="w-full bg-transparent text-foreground placeholder-muted-foreground resize-none outline-none text-lg leading-relaxed min-h-[80px] font-normal"
           />
 
           {/* Image preview */}
           {selectedImage && (
-            <div className="relative rounded-2xl overflow-hidden mb-3" style={{ maxHeight: 180 }}>
+            <div className="relative rounded-2xl overflow-hidden mb-3 max-h-[180px]">
               <img
                 src={URL.createObjectURL(selectedImage)}
                 alt=""
-                className="w-full object-cover"
-                style={{ maxHeight: 180 }}
+                className="w-full object-cover max-h-[180px]"
               />
               <button
                 onClick={() => setSelectedImage(null)}
-                className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(0,0,0,0.6)", color: "#FDFAF4" }}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center bg-black/60 text-card"
               >
                 <X size={14} />
               </button>
@@ -139,10 +132,9 @@ export function ComposeBox({
                     />
                   </svg>
                   {nearLimit && (
-                    <span
-                      className={`absolute inset-0 flex items-center justify-center text-[10px] ${overLimit ? "text-destructive" : "text-muted-foreground"}`}
-                      style={{ fontWeight: 700 }}
-                    >
+                    <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${
+                      overLimit ? "text-destructive" : "text-muted-foreground"
+                    }`}>
                       {remaining}
                     </span>
                   )}
@@ -151,23 +143,21 @@ export function ComposeBox({
 
               <button
                 onClick={handlePost}
-                disabled={!content.trim() || overLimit}
-                className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-[14px] disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)",
-                  boxShadow: content.trim()
-                    ? "0 0 16px rgba(139,92,246,0.4)"
-                    : "none",
-                  fontWeight: 700,
-                  color: "white",
-                }}
+                disabled={!content.trim() || overLimit || isLoading}
+                className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90 font-bold text-white bg-gradient-to-br from-[#8B5CF6] to-[#6366F1] ${
+                  content.trim() ? "shadow-[0_0_16px_rgba(139,92,246,0.4)]" : ""
+                }`}
               >
                 <Zap size={14} fill="white" />
-                Echo
+                {isLoading ? "Echoing..." : "Echo"}
               </button>
             </div>
           </div>
+          {error && (
+            <p className="text-xs mt-2 text-destructive font-semibold">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </div>

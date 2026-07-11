@@ -23,48 +23,32 @@ export function HashtagList({
   return (
     <div>
       {title && (
-        <h3
-          className="text-[13px] uppercase tracking-wider mb-3 px-1"
-          style={{ fontWeight: 700, color: "#7D7D72", letterSpacing: "0.08em" }}
-        >
+        <h3 className="text-xs uppercase tracking-[0.08em] mb-3 px-1 font-bold text-muted-foreground">
           {title}
         </h3>
       )}
 
       {compact ? (
-        /* Pill layout for sidebar / compact areas */
         <div className="flex flex-wrap gap-2">
           {TAGS.map((tag) => (
             <button
               key={tag.name}
               onClick={() => onTagClick?.(tag.name)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] transition-all hover:opacity-80 active:scale-95"
-              style={{
-                background: tag.trending
-                  ? "rgba(107,143,94,0.15)"
-                  : "rgba(42,42,37,0.06)",
-                color: tag.trending ? "#6B8F5E" : "#5A5A52",
-                fontWeight: 600,
-                border: tag.trending
-                  ? "1px solid rgba(107,143,94,0.3)"
-                  : "1px solid rgba(42,42,37,0.1)",
-              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-all hover:opacity-80 active:scale-95 font-semibold ${
+                tag.trending
+                  ? "bg-primary/15 text-primary border border-primary/30"
+                  : "bg-[rgba(42,42,37,0.06)] text-[#5A5A52] border border-[rgba(42,42,37,0.1)]"
+              }`}
             >
               <span>{tag.emoji}</span>
               <span>#{tag.name}</span>
               {tag.trending && (
-                <span
-                  className="text-[10px]"
-                  style={{ color: "#6B8F5E", opacity: 0.7 }}
-                >
-                  ↑
-                </span>
+                <span className="text-[10px] text-primary opacity-70">↑</span>
               )}
             </button>
           ))}
         </div>
       ) : (
-        /* Row layout for explore pages */
         <div className="flex flex-col gap-0.5">
           {TAGS.map((tag, i) => (
             <button
@@ -75,30 +59,20 @@ export function HashtagList({
               <span className="text-lg w-6 flex-shrink-0">{tag.emoji}</span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span
-                    className="text-foreground text-[14px]"
-                    style={{ fontWeight: 700 }}
-                  >
+                  <span className="text-foreground text-sm font-bold">
                     #{tag.name}
                   </span>
                   {tag.trending && (
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded-full"
-                      style={{
-                        background: "rgba(107,143,94,0.12)",
-                        color: "#6B8F5E",
-                        fontWeight: 700,
-                      }}
-                    >
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/12 text-primary font-bold">
                       Trending
                     </span>
                   )}
                 </div>
-                <span className="text-muted-foreground text-[12px]">
+                <span className="text-muted-foreground text-xs">
                   {fmt(tag.count)} thoughts
                 </span>
               </div>
-              <span className="text-muted-foreground text-[12px] flex-shrink-0">
+              <span className="text-muted-foreground text-xs flex-shrink-0">
                 #{i + 1}
               </span>
             </button>

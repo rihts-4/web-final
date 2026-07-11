@@ -14,16 +14,10 @@ export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
   if (posts.length === 0 || isAllCaughtUp) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center px-8">
-        <div
-          className="w-16 h-16 rounded-full mb-4 flex items-center justify-center"
-          style={{ background: "rgba(107,143,94,0.15)" }}
-        >
+        <div className="w-16 h-16 rounded-full mb-4 flex items-center justify-center bg-primary/15">
           <span className="text-2xl">🌱</span>
         </div>
-        <h2
-          className="text-foreground text-[22px] mb-2"
-          style={{ fontWeight: 800 }}
-        >
+        <h2 className="text-foreground text-[22px] mb-2 font-extrabold">
           All caught up
         </h2>
         <p className="text-muted-foreground text-[15px]">
@@ -34,12 +28,7 @@ export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
         {isAllCaughtUp && (
           <button
             onClick={resetToStart}
-            className="mt-5 px-6 py-2.5 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-95"
-            style={{
-              background: "#6B8F5E",
-              color: "#FDFAF4",
-              fontWeight: 700,
-            }}
+            className="mt-5 px-6 py-2.5 rounded-xl text-sm transition-all hover:opacity-90 active:scale-95 bg-primary text-card font-bold"
           >
             ← Start over
           </button>
@@ -103,23 +92,13 @@ export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
         <button
           onClick={retreat}
           disabled={topIndex === 0}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border transition-all disabled:opacity-30"
-          style={{
-            borderColor: "rgba(42,42,37,0.15)",
-            background: "#FDFAF4",
-            fontWeight: 600,
-            fontSize: 13,
-            color: "#2A2A25",
-          }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-[rgba(42,42,37,0.15)] transition-all disabled:opacity-30 bg-card font-semibold text-sm text-foreground"
         >
           ← Back
         </button>
 
         <div className="text-center">
-          <p
-            className="text-muted-foreground text-[12px]"
-            style={{ fontWeight: 500 }}
-          >
+          <p className="text-muted-foreground text-xs font-medium">
             {topIndex + 1} of {posts.length}
           </p>
           <p className="text-[11px] text-muted-foreground/60">
@@ -130,14 +109,7 @@ export function DeckFeed({ posts, onLike, onFollow, currentUserHandle }) {
         <button
           onClick={advance}
           disabled={topIndex >= posts.length - 1}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all disabled:opacity-30"
-          style={{
-            background: "#6B8F5E",
-            color: "#FDFAF4",
-            fontWeight: 600,
-            fontSize: 13,
-            boxShadow: "0 4px 12px rgba(107,143,94,0.3)",
-          }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all disabled:opacity-30 bg-primary text-card font-semibold text-sm shadow-[0_4px_12px_rgba(107,143,94,0.3)]"
         >
           Next →
         </button>

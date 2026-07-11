@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { RightSidebar } from "./RightSidebar";
@@ -29,11 +29,30 @@ export function Layout({ children }) {
     const [showCompose, setShowCompose] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [replyPost, setReplyPost] = useState(null);
+    const [postError, setPostError] = useState(null);
+    const [isPosting, setIsPosting] = useState(false);
     const [trending, setTrending] = useState({ hashtags: [], users: [] });
+    const firstTimeCheckDone = useRef(false);
+    const fromLogin = location.state?.fromLogin;
 
     useEffect(() => {
       api.feed.getTrending().then(setTrending).catch(() => {});
     }, []);
+
+    useEffect(() => {
+        if (!contextUser?.username || !fromLogin || firstTimeCheckDone.current) return;
+        firstTimeCheckDone.current = true;
+
+        navigate(location.pathname, { replace: true, state: {} });
+
+        api.users.checkHasPosts(contextUser.username)
+            .then((isFirstTime) => {
+                if (isFirstTime) {
+                    setShowOnboarding(true);
+                }
+            })
+            .catch(() => {});
+    }, [contextUser, fromLogin]);
 
     const getActiveNav = () => {
         const path = location.pathname;
@@ -52,21 +71,22 @@ export function Layout({ children }) {
     };
 
     const handlePost = async (content, image) => {
+        setIsPosting(true);
+        setPostError(null);
         try {
             await api.posts.create({ content, image });
             setShowCompose(false);
+            setShowOnboarding(false);
         } catch (err) {
-            alert(err.message);
+            setPostError(err.message);
+        } finally {
+            setIsPosting(false);
         }
     };
 
     return (
         <div
-            className="h-screen flex overflow-hidden"
-            style={{
-                background: "#F4F0E6",
-                fontFamily: "'Nunito', sans-serif",
-            }}
+            className="h-screen flex overflow-hidden bg-background font-['Nunito',sans-serif]"
         >
             <Sidebar
                 activeTab={getActiveNav()}
@@ -86,8 +106,7 @@ export function Layout({ children }) {
             />
 
             <main
-                className="flex-1 min-w-0 flex overflow-hidden"
-                style={{ borderRight: "1px solid rgba(42,42,37,0.1)" }}
+                className="flex-1 min-w-0 flex overflow-hidden pb-16 md:pb-0 border-r border-border/80"
             >
                 <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
                     {children}
@@ -115,9 +134,11 @@ export function Layout({ children }) {
 
             {showCompose && (
                 <ComposeModal
-                    onClose={() => setShowCompose(false)}
+                    onClose={() => { setShowCompose(false); setPostError(null); }}
                     onPost={handlePost}
                     currentUser={contextUser}
+                    isLoading={isPosting}
+                    error={postError}
                 />
             )}
 

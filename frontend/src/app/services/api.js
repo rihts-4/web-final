@@ -1,5 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-export const IMAGE_BASE = import.meta.env.VITE_IMAGE_BASE_URL || BASE_URL.replace(/\/api\/?$/, "");
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+export const IMAGE_BASE =
+    import.meta.env.VITE_IMAGE_BASE_URL || BASE_URL.replace(/\/api\/?$/, "");
 
 async function request(endpoint, options = {}) {
     const token = localStorage.getItem("auth_token");
@@ -75,6 +76,10 @@ export const api = {
     },
     users: {
         getProfile: (username) => request(`/users/${username}`),
+        checkHasPosts: async (username) => {
+            const data = await request(`/users/${username}`);
+            return !data.posts || data.posts.length === 0;
+        },
         follow: (id) =>
             request(`/users/${id}/follow`, {
                 method: "POST",

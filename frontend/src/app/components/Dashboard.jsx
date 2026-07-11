@@ -22,9 +22,15 @@ export function Dashboard({ initialUser }) {
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [replyPost, setReplyPost] = useState(null);
     const [selectedTopic, setSelectedTopic] = useState(null);
+    const [postError, setPostError] = useState(null);
+    const [isPosting, setIsPosting] = useState(false);
+    const [feedLoading, setFeedLoading] = useState(true);
+    const [feedError, setFeedError] = useState(null);
 
     useEffect(() => {
         const initApp = async () => {
+            setFeedLoading(true);
+            setFeedError(null);
             try {
                 const feedPosts = await api.feed.getPersonal();
                 const transformedPosts = feedPosts.map((post) => ({
@@ -43,12 +49,17 @@ export function Dashboard({ initialUser }) {
                 }));
                 setPosts(transformedPosts);
             } catch (err) {
-                console.error("Failed to load posts:", err);
+                setFeedError(err.message);
+            } finally {
+                setFeedLoading(false);
             }
         };
         initApp();
+    }, []);
 
     const handlePost = async (content, image) => {
+        setIsPosting(true);
+        setPostError(null);
         try {
             await api.posts.create({ content, image });
             const feedPosts = await api.feed.getPersonal();
@@ -68,13 +79,15 @@ export function Dashboard({ initialUser }) {
             }));
             setPosts(transformedPosts);
         } catch (err) {
-            alert(err.message);
+            setPostError(err.message);
+        } finally {
+            setIsPosting(false);
         }
     };
 
     if (!currentUser) {
         return (
-            <div className="h-screen flex items-center justify-center bg-[#F4F0E6]">
+            <div className="h-screen flex items-center justify-center bg-background">
                 <p className="text-muted-foreground">Loading your garden...</p>
             </div>
         );
@@ -87,89 +100,32 @@ export function Dashboard({ initialUser }) {
 
         if (activeNav === "notifications") {
             const notifs = [
-                {
-                    emoji: "❤️",
-                    user: "Amara Sol",
-                    handle: "amarasol",
-                    action: "liked your thought",
-                    time: "2h",
-                },
-                {
-                    emoji: "👁",
-                    user: "Rowan Ashby",
-                    handle: "rowanashby",
-                    action: "started following you",
-                    time: "4h",
-                },
-                {
-                    emoji: "🔁",
-                    user: "Zara Finch",
-                    handle: "zarafinch",
-                    action: "re-rooted your thought",
-                    time: "6h",
-                },
-                {
-                    emoji: "💬",
-                    user: "Felix Osei",
-                    handle: "felixosei",
-                    action: 'replied: "Couldn\'t agree more."',
-                    time: "8h",
-                },
-                {
-                    emoji: "❤️",
-                    user: "Mila Voss",
-                    handle: "milavoss",
-                    action: "liked your thought",
-                    time: "1d",
-                },
+                { emoji: "❤️", user: "Amara Sol", handle: "amarasol", action: "liked your thought", time: "2h" },
+                { emoji: "👁", user: "Rowan Ashby", handle: "rowanashby", action: "started following you", time: "4h" },
+                { emoji: "🔁", user: "Zara Finch", handle: "zarafinch", action: "re-rooted your thought", time: "6h" },
+                { emoji: "💬", user: "Felix Osei", handle: "felixosei", action: 'replied: "Couldn\'t agree more."', time: "8h" },
+                { emoji: "❤️", user: "Mila Voss", handle: "milavoss", action: "liked your thought", time: "1d" },
             ];
             return (
-                <div
-                    className="flex flex-col h-full overflow-y-auto"
-                    style={{ fontFamily: "'Nunito', sans-serif" }}
-                >
-                    <div
-                        className="px-5 py-4 flex items-center gap-2 flex-shrink-0"
-                        style={{
-                            borderBottom: "1px solid rgba(42,42,37,0.08)",
-                        }}
-                    >
-                        <Bell size={18} style={{ color: "#6B8F5E" }} />
-                        <h1
-                            className="text-foreground text-[18px]"
-                            style={{ fontWeight: 800 }}
-                        >
+                <div className="flex flex-col h-full overflow-y-auto">
+                    <div className="px-5 py-4 flex items-center gap-2 flex-shrink-0 border-b border-border/60">
+                        <Bell size={18} className="text-primary" />
+                        <h1 className="text-foreground text-[18px] font-extrabold">
                             Ripples
                         </h1>
                     </div>
                     {notifs.map((n, i) => (
                         <div
                             key={i}
-                            className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-secondary/40"
-                            style={{
-                                borderBottom: "1px solid rgba(42,42,37,0.06)",
-                            }}
+                            className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-secondary/40 border-b border-border/40"
                         >
-                            <span className="text-xl flex-shrink-0">
-                                {n.emoji}
-                            </span>
-                            <div
-                                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs"
-                                style={{
-                                    background: "#6B8F5E",
-                                    color: "#FDFAF4",
-                                    outline: "2px solid rgba(107,143,94,0.2)",
-                                    outlineOffset: 1,
-                                }}
-                            >
+                            <span className="text-xl flex-shrink-0">{n.emoji}</span>
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-xs bg-primary text-card outline-2 outline-primary/20 outline-offset-1">
                                 {n.handle?.charAt(0).toUpperCase() || "U"}
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <span
-                                    className="text-foreground text-[14px]"
-                                    style={{ fontWeight: 700 }}
-                                >
+                                <span className="text-foreground text-[14px] font-bold">
                                     {n.user}{" "}
                                 </span>
                                 <span className="text-foreground text-[14px]">
@@ -188,16 +144,8 @@ export function Dashboard({ initialUser }) {
         if (activeNav === "explore") {
             if (selectedTopic) {
                 return (
-                    <div
-                        className="flex flex-col h-full"
-                        style={{ fontFamily: "'Nunito', sans-serif" }}
-                    >
-                        <div
-                            className="px-5 py-4 flex items-center gap-3 flex-shrink-0"
-                            style={{
-                                borderBottom: "1px solid rgba(42,42,37,0.08)",
-                            }}
-                        >
+                    <div className="flex flex-col h-full">
+                        <div className="px-5 py-4 flex items-center gap-3 flex-shrink-0 border-b border-border/60">
                             <button
                                 onClick={() => setSelectedTopic(null)}
                                 className="w-8 h-8 rounded-full flex items-center justify-center bg-secondary transition-colors"
@@ -205,10 +153,7 @@ export function Dashboard({ initialUser }) {
                                 ←
                             </button>
                             <div>
-                                <h1
-                                    className="text-foreground text-[18px]"
-                                    style={{ fontWeight: 800 }}
-                                >
+                                <h1 className="text-foreground text-[18px] font-extrabold">
                                     {selectedTopic}
                                 </h1>
                                 <p className="text-muted-foreground text-[12px]">
@@ -227,22 +172,11 @@ export function Dashboard({ initialUser }) {
             }
 
             return (
-                <div
-                    className="flex flex-col h-full overflow-y-auto"
-                    style={{ fontFamily: "'Nunito', sans-serif" }}
-                >
-                    <div
-                        className="px-5 py-4 flex-shrink-0"
-                        style={{
-                            borderBottom: "1px solid rgba(42,42,37,0.08)",
-                        }}
-                    >
+                <div className="flex flex-col h-full overflow-y-auto">
+                    <div className="px-5 py-4 flex-shrink-0 border-b border-border/60">
                         <div className="flex items-center gap-2 mb-4">
-                            <Compass size={18} style={{ color: "#6B8F5E" }} />
-                            <h1
-                                className="text-foreground text-[18px]"
-                                style={{ fontWeight: 800 }}
-                            >
+                            <Compass size={18} className="text-primary" />
+                            <h1 className="text-foreground text-[18px] font-extrabold">
                                 Explore
                             </h1>
                         </div>
@@ -255,91 +189,32 @@ export function Dashboard({ initialUser }) {
                             <input
                                 type="text"
                                 placeholder="Search thoughts, tags, people..."
-                                className="w-full rounded-2xl pl-10 pr-4 py-2.5 text-[14px] outline-none"
-                                style={{
-                                    background: "#EAE5D8",
-                                    color: "#2A2A25",
-                                    border: "1.5px solid transparent",
-                                }}
-                                onFocus={(e) => {
-                                    e.target.style.borderColor = "#6B8F5E";
-                                    e.target.style.background = "#FDFAF4";
-                                }}
-                                onBlur={(e) => {
-                                    e.target.style.borderColor = "transparent";
-                                    e.target.style.background = "#EAE5D8";
-                                }}
+                                className="w-full rounded-2xl pl-10 pr-4 py-2.5 text-[14px] outline-none bg-switch-background text-foreground border-[1.5px] border-transparent focus:border-primary focus:bg-card transition-all"
                             />
                         </div>
                     </div>
 
                     <div className="px-5 py-5 flex flex-col gap-6">
                         <div>
-                            <h2
-                                className="text-[13px] uppercase tracking-wider mb-3"
-                                style={{ color: "#7D7D72", fontWeight: 700 }}
-                            >
+                            <h2 className="text-[13px] uppercase tracking-wider mb-3 text-muted-foreground font-bold">
                                 Topics
                             </h2>
                             <div className="grid grid-cols-2 gap-2.5">
                                 {[
-                                    {
-                                        label: "Slow Living",
-                                        emoji: "🍃",
-                                        count: "24.8K",
-                                    },
-                                    {
-                                        label: "Ecology",
-                                        emoji: "🌿",
-                                        count: "12.4K",
-                                    },
-                                    {
-                                        label: "Design",
-                                        emoji: "✏️",
-                                        count: "55K",
-                                    },
-                                    {
-                                        label: "Mindfulness",
-                                        emoji: "🧘",
-                                        count: "8.9K",
-                                    },
-                                    {
-                                        label: "Sustainability",
-                                        emoji: "♻️",
-                                        count: "41K",
-                                    },
-                                    {
-                                        label: "Science",
-                                        emoji: "🔬",
-                                        count: "18K",
-                                    },
+                                    { label: "Slow Living", emoji: "🍃", count: "24.8K" },
+                                    { label: "Ecology", emoji: "🌿", count: "12.4K" },
+                                    { label: "Design", emoji: "✏️", count: "55K" },
+                                    { label: "Mindfulness", emoji: "🧘", count: "8.9K" },
+                                    { label: "Sustainability", emoji: "♻️", count: "41K" },
+                                    { label: "Science", emoji: "🔬", count: "18K" },
                                 ].map((cat) => (
                                     <div
                                         key={cat.label}
-                                        onClick={() =>
-                                            setSelectedTopic(cat.label)
-                                        }
-                                        className="flex flex-col gap-1.5 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-md"
-                                        style={{
-                                            background: "#FDFAF4",
-                                            border: "1px solid rgba(42,42,37,0.08)",
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.borderColor =
-                                                "rgba(107,143,94,0.35)";
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.borderColor =
-                                                "rgba(42,42,37,0.08)";
-                                        }}
+                                        onClick={() => setSelectedTopic(cat.label)}
+                                        className="flex flex-col gap-1.5 p-4 rounded-2xl cursor-pointer transition-all hover:shadow-md bg-card border border-border/60 hover:border-primary/35"
                                     >
-                                        <span className="text-2xl">
-                                            {cat.emoji}
-                                        </span>
-                                        <span
-                                            className="text-foreground text-[14px]"
-                                            style={{ fontWeight: 700 }}
-                                        >
+                                        <span className="text-2xl">{cat.emoji}</span>
+                                        <span className="text-foreground text-[14px] font-bold">
                                             {cat.label}
                                         </span>
                                         <span className="text-muted-foreground text-[12px]">
@@ -356,24 +231,11 @@ export function Dashboard({ initialUser }) {
             );
         }
 
-
-
         return (
-            <div
-                className="flex flex-col h-full"
-                style={{ fontFamily: "'Nunito', sans-serif" }}
-            >
-                <div
-                    className="px-5 py-3.5 flex items-center justify-between flex-shrink-0"
-                    style={{
-                        borderBottom: "1px solid rgba(42,42,37,0.08)",
-                    }}
-                >
+            <div className="flex flex-col h-full">
+                <div className="px-5 py-3.5 flex items-center justify-between flex-shrink-0 border-b border-border/60">
                     <div>
-                        <h1
-                            className="text-foreground text-[18px]"
-                            style={{ fontWeight: 800 }}
-                        >
+                        <h1 className="text-foreground text-[18px] font-extrabold">
                             Your Garden
                         </h1>
                         <p className="text-muted-foreground text-[11px]">
@@ -381,20 +243,10 @@ export function Dashboard({ initialUser }) {
                         </p>
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <span
-                            className="px-3 py-1 rounded-full text-[12px]"
-                            style={{
-                                background: "rgba(107,143,94,0.12)",
-                                color: "#6B8F5E",
-                                fontWeight: 700,
-                            }}
-                        >
+                        <span className="px-3 py-1 rounded-full text-[12px] bg-primary/15 text-primary font-bold">
                             For you
                         </span>
-                        <span
-                            className="px-3 py-1 rounded-full text-[12px] text-muted-foreground cursor-pointer hover:bg-secondary transition-colors"
-                            style={{ fontWeight: 500 }}
-                        >
+                        <span className="px-3 py-1 rounded-full text-[12px] text-muted-foreground font-medium cursor-pointer hover:bg-secondary transition-colors">
                             Following
                         </span>
                     </div>
@@ -409,14 +261,50 @@ export function Dashboard({ initialUser }) {
         );
     };
 
+    const handleLike = async (id) => {
+        const post = posts.find((p) => p.id === id);
+        if (!post) return;
+        if (post.liked) {
+            await api.posts.unlike(id);
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id ? { ...p, liked: false, likes: Math.max(0, p.likes - 1) } : p,
+                ),
+            );
+        } else {
+            await api.posts.like(id);
+            setPosts((prev) =>
+                prev.map((p) =>
+                    p.id === id ? { ...p, liked: true, likes: p.likes + 1 } : p,
+                ),
+            );
+        }
+    };
+
+    const handleFollow = async (id) => {
+        const post = posts.find((p) => p.id === id);
+        if (!post) return;
+        if (post.isFollowing) {
+            await api.users.unfollow(post.userId);
+            setPosts((prev) =>
+                prev.map((p) => (p.id === id ? { ...p, isFollowing: false } : p)),
+            );
+        } else {
+            await api.users.follow(post.userId);
+            setPosts((prev) =>
+                prev.map((p) => (p.id === id ? { ...p, isFollowing: true } : p)),
+            );
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user");
+        navigate("/login");
+    };
+
     return (
-        <div
-            className="h-screen flex overflow-hidden"
-            style={{
-                background: "#F4F0E6",
-                fontFamily: "'Nunito', sans-serif",
-            }}
-        >
+        <div className="h-screen flex overflow-hidden bg-background">
             <Sidebar
                 activeTab={activeNav}
                 onTabChange={setActiveNav}
@@ -426,10 +314,7 @@ export function Dashboard({ initialUser }) {
                 currentUser={currentUser}
             />
 
-            <main
-                className="flex-1 min-w-0 flex overflow-hidden"
-                style={{ borderRight: "1px solid rgba(42,42,37,0.1)" }}
-            >
+            <main className="flex-1 min-w-0 flex overflow-hidden pb-16 md:pb-0 border-r border-border/60">
                 <div className="flex-1 min-w-0 overflow-hidden flex flex-col">
                     {renderMain()}
                 </div>
@@ -450,9 +335,11 @@ export function Dashboard({ initialUser }) {
 
             {showCompose && (
                 <ComposeModal
-                    onClose={() => setShowCompose(false)}
+                    onClose={() => { setShowCompose(false); setPostError(null); }}
                     onPost={handlePost}
                     currentUser={currentUser}
+                    isLoading={isPosting}
+                    error={postError}
                 />
             )}
 
