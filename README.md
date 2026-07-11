@@ -75,3 +75,9 @@ By default, the frontend runs on `http://localhost:5173`.
 - `app/context/UserContext.jsx` — user state context
 - `app/services/api.js` — API request layer
 - `app/components/` — reusable and page-level UI components
+
+### AI Usage Declaration
+AI Agents usage
+- Scaffolding
+- PR Review
+- Making changes based on the review
