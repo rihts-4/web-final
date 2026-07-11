@@ -1,4 +1,4 @@
-# Web Final — Microblogging Platform
+# Web Final — Microblogging Web Application
 
 ## How to clone the repository
 ```bash
