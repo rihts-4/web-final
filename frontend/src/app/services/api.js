@@ -24,8 +24,8 @@ async function request(endpoint, options = {}) {
     if (!response.ok) {
         const error = await response
             .json()
-            .catch(() => ({ message: response.message }));
-        throw new Error(error.message || "An unexpected error occurred");
+            .catch(() => ({ message: response.error }));
+        throw new Error(error.error || "An unexpected error occurred");
     }
 
     return response.json();
