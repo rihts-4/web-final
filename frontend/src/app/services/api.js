@@ -24,8 +24,8 @@ async function request(endpoint, options = {}) {
     if (!response.ok) {
         const error = await response
             .json()
-            .catch(() => ({ message: "An unexpected error occurred" }));
-        throw new Error(error.message || "Network response was not ok");
+            .catch(() => ({ message: response.message }));
+        throw new Error(error.message || "An unexpected error occurred");
     }
 
     return response.json();
