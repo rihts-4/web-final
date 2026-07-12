@@ -20,7 +20,7 @@ Frontend default URL: `http://localhost:5173`
 
 ## Important: run backend separately
 The frontend depends on the backend API, so also run:
-- `/home/runner/work/web-final/web-final/backend` in a **different terminal tab**
+- `web-final/backend` in a **different terminal tab**
 - backend server (`npm run dev`) at the same time
 
 ## Tech stack
@@ -48,7 +48,7 @@ The frontend depends on the backend API, so also run:
 - `/profile/:username` → `src/app/components/ProfilePage.jsx` (public profile by username)
 
 ### Frontend Development
-UI Design: Nicholas
-Developer: Muhammad Faiq Haikal Bin M Haikal
+- UI Design: Nicholas
+- Developer: Muhammad Faiq Haikal Bin M Haikal
 
 PR Review and README writer: Copilot agent
