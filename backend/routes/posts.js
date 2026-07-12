@@ -1,9 +1,22 @@
 const express = require("express");
+const fs = require("fs");
 const db = require("../db/database");
 const auth = require("../middleware/auth");
 const upload = require("../middleware/upload");
 
 const router = express.Router();
+
+/*
+ * Remove a file multer already wrote to disk when the request
+ * turns out to be invalid, so it doesn't get left orphaned
+ */
+function removeUploadedFile(req) {
+  if (req.file) {
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error("Failed to remove orphaned upload:", err);
+    });
+  }
+}
 
 /*
  * Extract hashtags from a post and save them
@@ -40,6 +53,7 @@ router.post("/", auth, upload.single("image"), (req, res) => {
     const { content } = req.body;
 
     if (!content || content.trim() === "") {
+      removeUploadedFile(req);
       return res.status(400).json({
         error: "Post cannot be empty",
       });
@@ -48,6 +62,7 @@ router.post("/", auth, upload.single("image"), (req, res) => {
     const trimmedContent = content.trim();
 
     if (trimmedContent.length > 280) {
+      removeUploadedFile(req);
       return res.status(400).json({
         error: "Post exceeds 280 characters",
       });
