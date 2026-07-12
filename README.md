@@ -1,5 +1,9 @@
 # Web Final — Microblogging Web Application
 
+## Deployment Details
+Frontend: https://groveweb.netlify.app/
+Backend: https://web-final-2y5i.onrender.com
+
 ## Project Overview
 
 Grove is a microblogging web application built for the Web Information Engineering group project. Users can create an account, publish short posts up to 280 characters with an optional image, follow other users, and read a feed built from the people they follow. On top of the required core, Grove also supports likes, hashtags, search, notifications, a trending panel, and image attachments. The frontend is a React single page app, the backend is an Express REST API backed by SQLite. Full design details, including architecture, data model, and API design, are documented in `design-document.md`.
