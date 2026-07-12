@@ -1,8 +1,8 @@
 # Web Final — Microblogging Web Application
 
 ## Deployment Details
-Frontend: https://groveweb.netlify.app/
-Backend: https://web-final-2y5i.onrender.com
+- Frontend: https://groveweb.netlify.app/
+- Backend: https://web-final-2y5i.onrender.com
 
 ## Project Overview
 
